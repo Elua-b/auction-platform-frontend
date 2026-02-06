@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000'
+const API_BASE = 'https://auction-platform-backend-uvjo.onrender.com'
 
 export async function apiCall(
   endpoint: string,
