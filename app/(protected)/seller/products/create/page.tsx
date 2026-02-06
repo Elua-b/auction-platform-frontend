@@ -14,6 +14,7 @@ import { AlertCircle, ArrowLeft } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import Header from '@/components/header'
 import Link from 'next/link'
+import { ImageUpload } from '@/components/ui/image-upload'
 
 interface Category {
   id: string
@@ -171,14 +172,11 @@ export default function CreateProductPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Product Image URL</label>
-                    <Input
-                      type="url"
-                      name="image"
-                      placeholder="https://example.com/image.jpg"
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Product Image</label>
+                    <ImageUpload
                       value={formData.image}
-                      onChange={handleInputChange}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+                      onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
+                      onError={(err) => setError(err)}
                     />
                   </div>
 
