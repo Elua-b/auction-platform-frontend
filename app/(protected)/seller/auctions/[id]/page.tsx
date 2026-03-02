@@ -17,7 +17,7 @@ export default function SellerAuctionManagePage() {
   const params = useParams()
   const auctionId = params.id as string
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   
   const [auction, setAuction] = useState<any>(null)
   const [bids, setBids] = useState<any[]>([])
@@ -79,52 +79,72 @@ export default function SellerAuctionManagePage() {
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading auction details...</div>
+  if (loading) return <div className="p-16 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white">Synchronizing Theatre Data...</div>
 
-  if (!auction) return <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-4">
-    <p>Auction not found</p>
-    <Button onClick={() => router.back()}>Go Back</Button>
+  if (!auction) return <div className="p-16 text-center space-y-8">
+    <p className="text-white font-black uppercase tracking-widest">Theatre not found in registry</p>
+    <Button onClick={() => router.back()} className="bg-primary hover:bg-primary/90 rounded-none font-black uppercase tracking-widest text-[10px] h-12 px-10">Go Back</Button>
   </div>
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <Header user={user} onLogout={logout} />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => router.push('/seller/dashboard')} className="text-slate-400 hover:text-white p-2">
-              <ArrowLeft className="w-5 h-5" />
+    <div className="min-h-screen bg-[#f8f9fa] p-8 md:p-12">
+      <main className="mx-auto max-w-7xl space-y-12">
+        {/* Navigation & Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+          <div className="flex flex-col gap-6">
+            <Button 
+                variant="outline" 
+                onClick={() => router.push('/seller/dashboard')} 
+                className="w-fit border-slate-200 text-slate-400 hover:bg-white hover:text-slate-800 rounded-sm h-10 px-4 font-black uppercase tracking-widest text-[9px] transition-all bg-white shadow-sm"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 mr-2" />
+              Strategic Dashboard
             </Button>
             <div>
-               <h1 className="text-3xl font-bold text-white">Manage Auction</h1>
-               <p className="text-slate-400 text-sm">Monitoring bidding for {auction.product.title}</p>
+              <div className="flex items-center gap-2 mb-4">
+                 <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none animate-pulse">Live Sync Active</span>
+                 <div className="h-px w-8 bg-slate-200"></div>
+              </div>
+              <h1 className="text-4xl font-black text-slate-800 mb-2 uppercase tracking-tighter leading-none">Bidding Theatre</h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-3">Real-time oversight of asset acquisition cycle</p>
             </div>
           </div>
-          <Badge className={`${auction.status === 'ACTIVE' ? 'bg-green-600' : 'bg-blue-600'}`}>
-             {auction.status}
+          <Badge className={`${auction.status === 'ACTIVE' ? 'bg-primary' : 'bg-slate-200 text-slate-600'} rounded-full font-black uppercase tracking-widest text-[9px] px-8 py-3 border-none shadow-lg shadow-primary/10`}>
+             {auction.status === 'ACTIVE' ? '🔴 LIVE THEATRE' : 'UPCOMING PHASE'}
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
            {/* Detailed Info */}
-           <div className="lg:col-span-2 space-y-6">
-              <Card className="bg-slate-800 border-slate-700 p-6">
-                 <div className="flex gap-6">
-                    <div className="w-24 h-24 bg-slate-900 rounded-lg overflow-hidden flex-shrink-0">
-                       {auction.product.image && <img src={auction.product.image} className="w-full h-full object-cover" />}
+           <div className="lg:col-span-8 space-y-12">
+              <Card className="bg-white border-none p-10 rounded-sm shadow-sm relative overflow-hidden">
+                 <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+                 <div className="flex flex-col md:flex-row gap-10">
+                    <div className="w-32 h-32 bg-slate-50 rounded-sm overflow-hidden flex-shrink-0 border border-slate-100 p-1">
+                       {auction.product.image ? (
+                         <img src={auction.product.image} className="w-full h-full object-cover grayscale opacity-80" alt={auction.product.title} />
+                       ) : (
+                         <div className="w-full h-full flex items-center justify-center">
+                            <Package className="w-8 h-8 text-slate-100" />
+                         </div>
+                       )}
                     </div>
-                    <div>
-                       <h2 className="text-xl font-bold text-white mb-2">{auction.product.title}</h2>
-                       <p className="text-sm text-slate-400 line-clamp-2">{auction.product.description}</p>
-                       <div className="flex items-center gap-4 mt-4">
-                          <div className="text-xs text-slate-300 flex items-center gap-1">
-                             <Clock className="w-3 h-3 text-amber-500" />
-                             Started: {new Date(auction.startTime).toLocaleString()}
+                    <div className="flex-1">
+                       <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest mb-2">Asset Identity</p>
+                       <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight mb-4">{auction.product.title}</h2>
+                       <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed mb-8">{auction.product.description || 'Exclusive asset liquidation session.'}</p>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-50">
+                          <div className="space-y-1">
+                             <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                <Clock className="w-3 h-3 text-primary" /> Commencement
+                             </div>
+                             <p className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{new Date(auction.startTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</p>
                           </div>
-                          <div className="text-xs text-slate-300 flex items-center gap-1">
-                             <Clock className="w-3 h-3 text-red-500" />
-                             Ends: {new Date(auction.endTime).toLocaleString()}
+                          <div className="space-y-1">
+                             <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                <Clock className="w-3 h-3 text-primary" /> Termination
+                             </div>
+                             <p className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{new Date(auction.endTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</p>
                           </div>
                        </div>
                     </div>
@@ -132,34 +152,57 @@ export default function SellerAuctionManagePage() {
               </Card>
 
               {/* Bidding History Table */}
-              <Card className="bg-slate-800 border-slate-700 overflow-hidden">
-                 <div className="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                       <TrendingUp className="w-5 h-5 text-amber-500" />
-                       Bid History
-                    </h3>
-                    <Badge variant="secondary">{bids.length} Total Bids</Badge>
+              <Card className="bg-white border-none rounded-sm shadow-sm overflow-hidden relative">
+                 <div className="absolute top-0 left-0 w-full h-1 bg-slate-50" />
+                 <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                    <div>
+                       <div className="flex items-center gap-3">
+                          <TrendingUp className="w-4 h-4 text-primary" />
+                          <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.4em]">Synchronization Log</h3>
+                       </div>
+                       <p className="text-primary text-[8px] font-black uppercase tracking-widest mt-2">Active Telemetry Stream</p>
+                    </div>
+                    <div className="flex items-center gap-6">
+                       <div className="text-right">
+                          <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Global Entries</p>
+                          <p className="text-lg font-black text-slate-800 tracking-tighter">{bids.length}</p>
+                       </div>
+                    </div>
                  </div>
                  <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                       <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+                       <thead className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50 border-b border-slate-50">
                           <tr>
-                             <th className="px-6 py-3">Bidder</th>
-                             <th className="px-6 py-3">Amount</th>
-                             <th className="px-6 py-3">Time</th>
+                             <th className="px-10 py-5">Authority</th>
+                             <th className="px-10 py-5 text-slate-800">Valuation</th>
+                             <th className="px-10 py-5">System Time</th>
                           </tr>
                        </thead>
-                       <tbody className="divide-y divide-slate-700">
+                       <tbody className="divide-y divide-slate-50">
                           {bids.length === 0 ? (
                              <tr>
-                                <td colSpan={3} className="px-6 py-8 text-center text-slate-500">No bids yet</td>
+                                <td colSpan={3} className="px-10 py-20 text-center">
+                                   <p className="text-[10px] font-black text-slate-200 uppercase tracking-[0.2em] italic">No active data streams detected...</p>
+                                </td>
                              </tr>
                           ) : (
-                             bids.map((bid) => (
-                                <tr key={bid.id} className="text-sm">
-                                   <td className="px-6 py-4 text-white font-medium">{bid.user.name}</td>
-                                   <td className="px-6 py-4 text-amber-500 font-bold">{formatCurrency(bid.amount)}</td>
-                                   <td className="px-6 py-4 text-slate-400">{formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true })}</td>
+                             bids.map((bid, index) => (
+                                <tr key={bid.id} className={`group hover:bg-slate-50/50 transition-all ${index === 0 ? 'bg-red-50/30' : ''}`}>
+                                   <td className="px-10 py-6">
+                                      <div className="flex items-center gap-4">
+                                         <div className="w-8 h-8 rounded-sm bg-slate-50 border border-slate-100 flex items-center justify-center font-black text-[9px] text-slate-300 group-hover:border-primary/20 group-hover:text-primary transition-all">
+                                            {bids.length - index}
+                                         </div>
+                                         <div>
+                                            <p className="text-slate-800 font-black uppercase tracking-widest text-[11px] leading-none mb-1">{bid.user.name}</p>
+                                            <p className="text-[8px] font-black text-slate-300">USER_REF: {bid.userId.substring(0, 8)}</p>
+                                         </div>
+                                      </div>
+                                   </td>
+                                   <td className="px-10 py-6 text-xl font-black text-slate-800 tracking-tighter group-hover:text-primary transition-colors">{formatCurrency(bid.amount)}</td>
+                                   <td className="px-10 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                      {formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true }).toUpperCase()}
+                                   </td>
                                 </tr>
                              ))
                           )}
@@ -170,68 +213,86 @@ export default function SellerAuctionManagePage() {
            </div>
 
            {/* Quick Stats Sidebar */}
-           <div className="space-y-6">
-              <Card className="bg-slate-800 border-slate-700 p-6 text-center">
-                 <p className="text-slate-400 text-xs uppercase font-bold mb-2">Highest Bid</p>
-                 <p className="text-4xl font-black text-amber-500">{formatCurrency(auction.product.currentPrice || auction.product.startingPrice)}</p>
-                 <div className="mt-4 pt-4 border-t border-slate-700">
-                    <p className="text-xs text-slate-500">Starting at {formatCurrency(auction.product.startingPrice)}</p>
+           <div className="lg:col-span-4 space-y-10">
+              <Card className="bg-white border-none p-10 rounded-sm shadow-sm relative overflow-hidden">
+                 <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 text-center">Current Asset Valuation</p>
+                 <div className="bg-slate-900 border-none p-10 text-center space-y-4 rounded-sm shadow-inner relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
+                    <p className="text-5xl font-black text-white tracking-tighter relative z-10">{formatCurrency(auction.product.currentPrice || auction.product.startingPrice)}</p>
+                    <div className="px-3 py-1 bg-primary/20 text-primary font-black uppercase tracking-widest text-[8px] inline-block mx-auto rounded-full relative z-10 animate-pulse">
+                       Real-time Dynamic Sync
+                    </div>
+                 </div>
+                 <div className="mt-10 pt-8 border-t border-slate-50 flex justify-between items-center">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Base Threshold</p>
+                    <p className="text-lg font-black text-slate-800 tracking-tighter">{formatCurrency(auction.product.startingPrice)}</p>
                  </div>
               </Card>
 
-              <Card className="bg-slate-800 border-slate-700 p-6">
-                 <h4 className="text-white font-bold mb-4 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-blue-500" />
-                    Participation
+              <Card className="bg-white border-none p-10 rounded-sm shadow-sm relative overflow-hidden">
+                 <div className="absolute top-0 left-0 w-full h-1 bg-slate-50" />
+                 <h4 className="text-[10px] font-black text-slate-800 mb-10 uppercase tracking-[0.4em] flex items-center gap-3">
+                    <Users className="w-4 h-4 text-primary" />
+                    Bidding Metrics
                  </h4>
-                 <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                       <span className="text-slate-400">Unique Bidders</span>
-                       <span className="text-white font-bold">{new Set(bids.map(b => b.userId)).size}</span>
+                 <div className="space-y-4">
+                    <div className="flex justify-between items-center p-5 bg-slate-50 rounded-sm border border-slate-100">
+                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Unique Entities</span>
+                       <span className="text-slate-800 font-black text-xl">{new Set(bids.map(b => b.userId)).size}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                       <span className="text-slate-400">Price Increase</span>
-                       <span className="text-green-500 font-bold">
-                          {((auction.product.currentPrice - auction.product.startingPrice) / auction.product.startingPrice * 100).toFixed(1)}%
+                    <div className="flex justify-between items-center p-5 bg-slate-50 rounded-sm border border-slate-100">
+                       <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Value Appreciation</span>
+                       <span className="text-primary font-black text-xl tracking-tighter">
+                          +{auction.product.startingPrice > 0 ? ((auction.product.currentPrice - auction.product.startingPrice) / auction.product.startingPrice * 100).toFixed(1) : '0.0'}%
                        </span>
                     </div>
                  </div>
               </Card>
 
-              <div className="flex flex-col gap-3">
-                 <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white" disabled={auction.status === 'ENDED'}>
+              <div className="flex flex-col gap-4 pt-4">
+                 <Button className="w-full bg-slate-800 hover:bg-slate-900 text-white font-black uppercase tracking-[0.2em] text-[10px] h-16 rounded-sm shadow-md transition-all hover:translate-y-[-2px]" disabled={auction.status === 'ENDED'}>
                     Extend Duration
                  </Button>
-                 <Button variant="destructive" className="w-full" disabled={auction.status === 'ENDED'}>
-                    Cancel Auction
+                 <Button variant="outline" className="w-full border-slate-200 text-slate-400 hover:bg-red-50 hover:text-primary hover:border-red-100 rounded-sm font-black uppercase tracking-widest text-[9px] h-14 transition-all bg-white" disabled={auction.status === 'ENDED'}>
+                    Terminate Session
                  </Button>
               </div>
            </div>
         </div>
       </main>
 
-      {/* Winner Overlay for Seller */}
+      {/* Terminal Overlay (Winner) */}
       {winnerData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-800 border-2 border-amber-500 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center animate-scaleIn">
-            <Zap className="w-16 h-16 text-amber-500 mx-auto mb-4 animate-bounce" />
-            <h2 className="text-3xl font-bold text-white mb-2">Auction Completed!</h2>
-            <p className="text-slate-400 mb-6 font-medium">Your item has been sold.</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fadeIn p-4">
+          <div className="bg-white border-none p-12 rounded-sm shadow-2xl max-w-lg w-full text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-primary animate-pulse"></div>
+            <div className="w-20 h-20 bg-red-50 text-primary mx-auto mb-8 flex items-center justify-center rounded-full animate-bounce">
+                <Zap className="w-10 h-10" />
+            </div>
+            <h2 className="text-4xl font-black text-slate-800 mb-2 uppercase tracking-tighter">ACQUISITION COMPLETE</h2>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10">Official Synchronization Result</p>
             
-            <div className="bg-slate-900/50 rounded-xl p-6 mb-6">
-              <p className="text-slate-400 text-sm mb-1">Final Buyer</p>
-              <p className="text-2xl font-bold text-white mb-4">{winnerData.name}</p>
-              <p className="text-slate-400 text-sm mb-1">Sale Price</p>
-              <p className="text-3xl font-black text-amber-500">{formatCurrency(winnerData.amount)}</p>
+            <div className="bg-slate-50 border border-slate-100 rounded-sm p-8 mb-10 text-left space-y-8">
+               <div className="flex justify-between items-center border-b border-slate-100 pb-5">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">AUTHORITY</span>
+                  <span className="text-slate-800 font-black uppercase tracking-tight text-xl">{winnerData.name}</span>
+               </div>
+               <div className="flex justify-between items-center">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">FINAL VALUATION</span>
+                  <span className="text-4xl font-black text-primary tracking-tighter leading-none">{formatCurrency(winnerData.amount)}</span>
+               </div>
             </div>
             
-            <p className="text-slate-500 text-sm mb-6 italic">An order has been created. You can fulfill it from your dashboard.</p>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mb-10 italic leading-relaxed">
+               An official acquisition order has been registered in the system. Fulfillment protocols are now active.
+            </p>
             
             <Button 
               onClick={() => setWinnerData(null)}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold h-12"
+              className="w-full bg-slate-800 hover:bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] h-16 rounded-sm transition-all shadow-lg"
             >
-              Continue Monitoring
+              ACKNOWLEDGE & RETURN
             </Button>
           </div>
         </div>

@@ -1,4 +1,4 @@
-const API_BASE = 'https://auction-platform-backend-uvjo.onrender.com'
+const API_BASE = 'http://localhost:5000'
 
 export async function apiCall(
   endpoint: string,
@@ -80,12 +80,12 @@ export const eventAPI = {
   start: (id: string) => apiCall(`/events/${id}/start`, { method: 'POST' }),
   end: (id: string) => apiCall(`/events/${id}/end`, { method: 'POST' }),
   activateProduct: (id: string, eventProductId: string, duration: number) =>
-    apiCall(`/events/${id}/activate-product/${eventProductId}`, {
+    apiCall(`/events/${id}/products/${eventProductId}/activate`, {
       method: 'POST',
       body: JSON.stringify({ duration })
     }),
   endProduct: (id: string, eventProductId: string) =>
-    apiCall(`/events/${id}/end-product/${eventProductId}`, { method: 'POST' }),
+    apiCall(`/events/${id}/products/${eventProductId}/end`, { method: 'POST' }),
   removeProduct: (id: string, eventProductId: string) =>
     apiCall(`/events/${id}/products/${eventProductId}`, { method: 'DELETE' }),
   delete: (id: string) => apiCall(`/events/${id}`, { method: 'DELETE' }),

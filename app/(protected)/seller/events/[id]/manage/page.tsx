@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, Plus, Trash2, ArrowLeft, Search, Package, Zap, Image as ImageIcon } from 'lucide-react'
+import { AlertCircle, Plus, Trash2, ArrowLeft, Search, Package, Zap, Image as ImageIcon, Calendar, Clock } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Dialog,
@@ -22,6 +22,7 @@ import { categoryAPI } from '@/lib/api'
 import Header from '@/components/header'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
+import { ImageUpload } from '@/components/ui/image-upload'
 
 interface Product {
   id: string
@@ -157,6 +158,19 @@ export default function ManageEventPage() {
     }
   }
 
+  const handleEndEvent = async () => {
+    if (!confirm('Are you sure you want to terminate this live session? All active bidding will be closed.')) return
+    try {
+      setActionLoading(true)
+      await eventAPI.end(eventId)
+      await loadData()
+    } catch (err: any) {
+      setError(err.message || 'Failed to terminate event')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   const handleLogout = () => {
     logout()
     router.push('/')
@@ -181,99 +195,121 @@ export default function ManageEventPage() {
   if (!event) return null
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <Header user={user} onLogout={handleLogout} />
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/events">
-              <Button variant="ghost" className="text-slate-400 hover:text-white p-2">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-white">{event.title}</h1>
-              <p className="text-slate-400">
-                {new Date(event.date).toLocaleDateString()} at {event.startTime}
-              </p>
+    <div className="min-h-screen bg-[#f8f9fa] p-8 md:p-12">
+      <main className="mx-auto max-w-7xl space-y-10">
+        {/* Header Row */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <Link href="/seller/dashboard">
+                <Button variant="outline" size="sm" className="text-slate-400 border-slate-200 hover:bg-white hover:text-primary transition-all rounded-sm font-black uppercase tracking-widest text-[9px] h-8 px-4 bg-white shadow-sm">
+                  <ArrowLeft className="w-3 h-3 mr-2" />
+                  Registry
+                </Button>
+              </Link>
+              <div className="h-4 w-px bg-slate-200"></div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Event Control Center</p>
+            </div>
+            <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter leading-none">{event.title}</h1>
+            <div className="flex items-center gap-4 mt-3">
+               <div className="flex items-center gap-2 px-2 py-1 bg-slate-100 rounded-sm">
+                 <Calendar className="w-3 h-3 text-primary" />
+                 <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{new Date(event.date).toLocaleDateString()}</span>
+               </div>
+               <div className="flex items-center gap-2 px-2 py-1 bg-slate-100 rounded-sm">
+                 <Clock className="w-3 h-3 text-primary" />
+                 <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{event.startTime}</span>
+               </div>
+               <Badge className="bg-slate-800 text-white rounded-none px-3 font-black text-[8px] uppercase tracking-widest border-none">
+                 {event.status}
+               </Badge>
             </div>
           </div>
-          <Link href={`/events/${event.id}`}>
-            <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold">
-              <Zap className="w-4 h-4 mr-2" />
-              Go to Live Room
-            </Button>
-          </Link>
+
+          <div className="flex gap-4">
+            {event.status === 'LIVE' && (
+              <Button 
+                onClick={handleEndEvent}
+                className="bg-white border border-primary text-primary hover:bg-primary/5 font-black uppercase tracking-[0.2em] text-[10px] rounded-sm h-14 px-8 transition-all"
+                disabled={actionLoading}
+              >
+                Terminate Session
+              </Button>
+            )}
+            <Link href={`/events/${event.id}`}>
+              <Button className="bg-primary hover:bg-primary/95 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-sm h-14 px-10 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-2px]">
+                <Zap className="w-4 h-4 mr-3" />
+                Launch Live Theatre
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-8">
+          <Alert variant="destructive" className="mb-10 rounded-sm border-none bg-red-50 text-red-600">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription className="font-bold uppercase tracking-widest text-[10px]">{error}</AlertDescription>
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Current Items in Event */}
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Package className="w-5 h-5 text-amber-500" />
-                Event Lots ({event.products.length})
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+              <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest">
+                Assigned Lots ({event.products.length})
               </h2>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sequenced Inventory</p>
             </div>
             
             <div className="space-y-4">
               {event.products.length === 0 ? (
-                <Card className="bg-slate-900 border-slate-800 p-8 text-center border-dashed">
-                  <Package className="w-12 h-12 text-slate-700 mx-auto mb-4" />
-                  <p className="text-slate-500">No items added to this event yet</p>
+                <Card className="bg-white border-2 border-slate-100 border-dashed p-20 text-center rounded-sm">
+                  <Package className="w-12 h-12 text-slate-100 mx-auto mb-4" />
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No lots synchronized for this session</p>
                 </Card>
               ) : (
                 event.products.map((ep, index) => (
-                  <Card key={ep.id} className="bg-slate-800 border-slate-700 overflow-hidden">
-                    <div className="flex items-center gap-4 p-4">
-                      <div className="w-20 h-20 bg-slate-900 rounded-lg overflow-hidden flex-shrink-0 relative">
-                        {ep.product.image ? (
-                          <img src={ep.product.image} alt={ep.product.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <Package className="w-8 h-8 text-slate-700 absolute inset-0 m-auto" />
-                        )}
-                        <div className="absolute top-1 left-1 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center font-bold text-black text-[10px]">
-                          {index + 1}
+                  <Card key={ep.id} className="bg-white border-none rounded-sm overflow-hidden flex items-center p-4 shadow-sm hover:shadow-md transition-all group relative">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-slate-100 group-hover:bg-primary transition-colors" />
+                    
+                    <div className="w-20 h-20 bg-slate-50 rounded-sm overflow-hidden flex-shrink-0 border border-slate-100">
+                      {ep.product.image ? (
+                        <img src={ep.product.image} alt={ep.product.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package className="w-6 h-6 text-slate-200" />
                         </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 ml-6 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-black text-primary uppercase">Lot {ep.order}</span>
+                            <span className="text-slate-300">/</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ID: {ep.product.id.substring(0, 8)}</span>
+                          </div>
+                          <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight truncate pr-4">{ep.product.title}</h3>
+                        </div>
+                        <Badge className="bg-slate-50 text-slate-400 border-none rounded-full px-2 text-[7px] font-black uppercase">
+                          {ep.product.status}
+                        </Badge>
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold text-white truncate">{ep.product.title}</h3>
-                            <p className="text-sm text-amber-500 font-medium">{formatCurrency(ep.product.startingPrice)}</p>
-                          </div>
-                          <Badge 
-                            className={`${
-                              ep.product.status === 'AVAILABLE' ? 'bg-slate-700' : 
-                              ep.product.status === 'SOLD' ? 'bg-green-600' : 'bg-blue-600'
-                            }`}
-                          >
-                            {ep.product.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-slate-500">Lot {ep.order}</span>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 text-red-400 hover:text-red-300 hover:bg-red-400/10 p-0 px-2"
-                            onClick={() => handleRemoveProduct(ep.id)}
-                            disabled={actionLoading}
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Remove
-                          </Button>
-                        </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <p className="text-md font-black text-slate-800 tracking-tighter">{formatCurrency(ep.product.startingPrice)}</p>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-sm px-3 font-black uppercase tracking-widest text-[9px] transition-all"
+                          onClick={() => handleRemoveProduct(ep.id)}
+                          disabled={actionLoading}
+                        >
+                          <Trash2 className="w-3.5 h-3.5 mr-2" />
+                          Release
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -284,84 +320,87 @@ export default function ManageEventPage() {
 
           {/* Add More Products */}
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-green-500" />
-                Add Your Properties
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+              <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest">
+                Available Portfolio
               </h2>
-              
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
-                    <Plus className="w-4 h-4 mr-1" />
-                    New Product
+                  <Button size="sm" className="bg-slate-800 hover:bg-slate-900 text-white font-black uppercase tracking-widest text-[9px] rounded-sm px-4 h-9 shadow-md transition-all">
+                    <Plus className="w-3.5 h-3.5 mr-2" />
+                    Rapid Registry
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-[500px]">
-                  <DialogHeader>
-                    <DialogTitle>Create New Product for Event</DialogTitle>
+                <DialogContent className="bg-white border-none rounded-sm shadow-2xl p-0 overflow-hidden max-w-lg">
+                  <div className="h-1.5 bg-primary w-full" />
+                  <DialogHeader className="p-8 border-b border-slate-50">
+                    <DialogTitle className="text-lg font-black text-slate-800 uppercase tracking-tight">Onboard New Asset</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleCreateAndAdd} className="space-y-4 pt-4">
+                  <form onSubmit={handleCreateAndAdd} className="p-8 space-y-6">
                     <div className="space-y-2">
-                       <label className="text-sm font-medium text-slate-400">Title</label>
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asset Identity *</label>
                        <Input 
                          required
                          value={newProduct.title}
                          onChange={e => setNewProduct({...newProduct, title: e.target.value})}
-                         className="bg-slate-800 border-slate-700" 
-                         placeholder="Modern Penthouse..."
+                         className="bg-slate-50 border-none rounded-sm h-12 text-sm font-bold uppercase tracking-tight focus-visible:ring-1 focus-visible:ring-primary" 
+                         placeholder="e.g. PLATINUM SERIES MOTOR"
                        />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-sm font-medium text-slate-400">Description</label>
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detailed Narrative *</label>
                        <textarea 
                          required
                          value={newProduct.description}
                          onChange={e => setNewProduct({...newProduct, description: e.target.value})}
-                         className="w-full bg-slate-800 border-slate-700 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[100px]" 
-                         placeholder="Describe the property..."
+                         className="w-full bg-slate-50 border-none rounded-sm p-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px] transition-all resize-none" 
+                         placeholder="Technical specifications and condition report..."
                        />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
-                         <label className="text-sm font-medium text-slate-400">Price (RWF)</label>
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Valuation (RWF) *</label>
                          <Input 
                            required
                            type="number"
                            value={newProduct.startingPrice}
                            onChange={e => setNewProduct({...newProduct, startingPrice: e.target.value})}
-                           className="bg-slate-800 border-slate-700" 
-                           placeholder="5000000"
+                           className="bg-slate-50 border-none rounded-sm h-12 text-lg font-black tracking-tighter focus-visible:ring-1 focus-visible:ring-primary" 
                          />
                       </div>
                       <div className="space-y-2">
-                         <label className="text-sm font-medium text-slate-400">Category</label>
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Classification *</label>
                          <select 
                            required
                            value={newProduct.categoryId}
                            onChange={e => setNewProduct({...newProduct, categoryId: e.target.value})}
-                           className="w-full bg-slate-800 border border-slate-700 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                           className="w-full bg-slate-50 border-none rounded-sm h-12 px-3 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                          >
-                            <option value="">Select Category</option>
+                            <option value="">SELECT TYPE</option>
                             {categories.map(c => (
-                              <option key={c.id} value={c.id}>{c.name}</option>
+                              <option key={c.id} value={c.id}>{c.name.toUpperCase()}</option>
                             ))}
                          </select>
                       </div>
                     </div>
+
                     <div className="space-y-2">
-                       <label className="text-sm font-medium text-slate-400">Image URL</label>
-                       <Input 
-                         value={newProduct.image}
-                         onChange={e => setNewProduct({...newProduct, image: e.target.value})}
-                         className="bg-slate-800 border-slate-700" 
-                         placeholder="https://images.unsplash..."
-                       />
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Visual Authentication Port</label>
+                       <div className="bg-slate-50 border border-slate-100 rounded-sm p-4">
+                         <ImageUpload 
+                           value={newProduct.image}
+                           onChange={url => setNewProduct({...newProduct, image: url})}
+                           onError={err => setError(err)}
+                           className="h-32"
+                         />
+                       </div>
                     </div>
-                    <DialogFooter className="pt-4">
-                      <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                      <Button type="submit" disabled={actionLoading} className="bg-amber-500 text-black font-bold">
-                        {actionLoading ? 'Creating...' : 'Create & Add'}
+                    <DialogFooter className="pt-6 flex flex-col sm:flex-row gap-4 border-t border-slate-50">
+                      <Button type="button" variant="outline" className="flex-1 rounded-sm border-slate-200 font-black uppercase tracking-widest text-[10px] h-14" onClick={() => setIsModalOpen(false)}>
+                        ABORT
+                      </Button>
+                      <Button type="submit" disabled={actionLoading} className="flex-[2] bg-primary text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-sm shadow-lg shadow-primary/20">
+                        {actionLoading ? 'SYNCHRONIZING...' : 'AUTHORIZE & ASSIGN'}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -369,37 +408,46 @@ export default function ManageEventPage() {
               </Dialog>
             </div>
 
-            <Card className="bg-slate-800 border-slate-700 p-6">
-              <div className="relative mb-6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <Input
-                  placeholder="Search your available properties..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-700 border-slate-600 text-white"
-                />
+            <Card className="bg-white border-none rounded-sm shadow-sm overflow-hidden">
+              <div className="p-4 bg-slate-50 border-b border-slate-100">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
+                  <Input
+                    placeholder="SEARCH PORTFOLIO..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-11 bg-white border-none text-slate-800 placeholder:text-slate-300 rounded-sm h-12 font-black uppercase tracking-widest text-[9px] focus-visible:ring-1 focus-visible:ring-primary shadow-sm"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+              <div className="divide-y divide-slate-50 max-h-[500px] overflow-y-auto custom-scrollbar">
                 {filteredProducts.length === 0 ? (
-                  <p className="text-slate-500 text-center py-4">No available products found</p>
+                  <div className="py-20 text-center">
+                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">No available assets identified</p>
+                  </div>
                 ) : (
                   filteredProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700 hover:border-slate-500 transition"
+                      className="flex items-center justify-between p-4 hover:bg-slate-50 transition-all group"
                     >
-                      <div>
-                        <p className="font-medium text-white">{product.title}</p>
-                        <p className="text-sm text-slate-400">{formatCurrency(product.startingPrice)}</p>
-                      </div>
+                       <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-slate-100 rounded-sm overflow-hidden border border-slate-200">
+                             {product.image && <img src={product.image} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all" />}
+                          </div>
+                          <div>
+                            <p className="font-black text-slate-700 uppercase tracking-tight text-[11px] group-hover:text-primary transition-colors">{product.title}</p>
+                            <p className="text-sm font-black text-slate-900 pr-4">{formatCurrency(product.startingPrice)}</p>
+                          </div>
+                       </div>
                       <Button
                         size="sm"
                         disabled={actionLoading}
                         onClick={() => handleAddProduct(product.id)}
-                        className="bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black border border-amber-500/20"
+                        className="bg-white border border-slate-200 text-slate-400 hover:bg-primary hover:border-primary hover:text-white rounded-sm font-black uppercase tracking-widest text-[8px] h-9 px-4 transition-all"
                       >
-                        Add to Event
+                        Assign To Lot
                       </Button>
                     </div>
                   ))

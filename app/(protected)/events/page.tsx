@@ -109,108 +109,193 @@ export default function EventsPage() {
   )
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <Header user={user} onLogout={handleLogout} />
-
-      <main className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+    <div className="min-h-screen bg-[#f8f9fa] p-8 md:p-12">
+      <main className="mx-auto max-w-7xl space-y-12">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Live Auction Events</h1>
-            <p className="text-slate-400">Join exciting live auctions hosted by sellers</p>
+            <div className="flex items-center gap-2 mb-4">
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Global Network</span>
+               <div className="h-px w-8 bg-slate-200"></div>
+            </div>
+            <h1 className="text-4xl font-black text-slate-800 mb-2 uppercase tracking-tighter leading-none">Live Experiences</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-3">Access to the world's most exclusive live auction events</p>
           </div>
           {user?.userType === 'SELLER' && (
             <Link href="/seller/events/create">
-              <Button className="bg-amber-500 hover:bg-amber-600 text-black font-semibold">
-                <Plus className="w-4 h-4 mr-2" />
-                Host Event
+              <Button className="bg-primary hover:bg-primary/95 text-white font-black uppercase tracking-[0.2em] text-[10px] rounded-sm h-14 px-10 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-2px]">
+                <Plus className="w-4 h-4 mr-3" />
+                Host Premiere Event
               </Button>
             </Link>
           )}
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive" className="rounded-sm border-none bg-red-50 text-red-600">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription className="font-bold uppercase tracking-widest text-[10px]">{error}</AlertDescription>
           </Alert>
         )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-slate-800 border-slate-700 p-6">
+        {/* Global Analytics / Status Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="bg-white border-none p-8 rounded-sm shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Active Now</p>
-                <p className="text-2xl font-bold text-white">{activeEvents.length}</p>
+                <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-1">Active Now</p>
+                <p className="text-3xl font-black text-slate-800">{activeEvents.length}</p>
               </div>
-              <Users className="w-8 h-8 text-green-500" />
+              <div className="w-12 h-12 bg-red-50 flex items-center justify-center text-primary rounded-sm transition-transform group-hover:scale-110">
+                <Users className="w-5 h-5" />
+              </div>
             </div>
           </Card>
 
-          <Card className="bg-slate-800 border-slate-700 p-6">
+          <Card className="bg-white border-none p-8 rounded-sm shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="absolute top-0 left-0 w-1 h-full bg-slate-200" />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Upcoming</p>
-                <p className="text-2xl font-bold text-white">{upcomingEvents.length}</p>
+                <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-1">Upcoming Collections</p>
+                <p className="text-3xl font-black text-slate-800">{upcomingEvents.length}</p>
               </div>
-              <Calendar className="w-8 h-8 text-blue-500" />
+              <div className="w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-400 rounded-sm transition-transform group-hover:scale-110">
+                <Calendar className="w-5 h-5" />
+              </div>
             </div>
           </Card>
 
-          <Card className="bg-slate-800 border-slate-700 p-6">
+          <Card className="bg-white border-none p-8 rounded-sm shadow-sm relative overflow-hidden group hover:shadow-md transition-all opacity-60">
+            <div className="absolute top-0 left-0 w-1 h-full bg-slate-100" />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm">Ended</p>
-                <p className="text-2xl font-bold text-white">{endedEvents.length}</p>
+                <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-1">Archive Record</p>
+                <p className="text-3xl font-black text-slate-400">{endedEvents.length}</p>
               </div>
-              <Clock className="w-8 h-8 text-gray-500" />
+              <div className="w-12 h-12 bg-slate-50 flex items-center justify-center text-slate-200 rounded-sm">
+                <Clock className="w-5 h-5" />
+              </div>
             </div>
           </Card>
         </div>
 
-        {/* Active Events Section */}
+        {/* Dynamic Event Sections */}
         {activeEvents.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-4">Active Right Now</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-8">
+            <div className="flex items-center gap-4">
+              <h2 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.4em] whitespace-nowrap">Live Auctions Ongoing</h2>
+              <div className="h-px bg-slate-200 flex-1"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {activeEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
+                <Link key={event.id} href={`/events/${event.id}`} className="group h-full">
+                  <Card className="bg-white border-none overflow-hidden rounded-sm shadow-sm hover:shadow-xl transition-all duration-500 h-full flex flex-col relative">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-primary animate-pulse" />
+                    <div className="p-8 flex-1 flex flex-col">
+                      <div className="flex justify-between items-start mb-6">
+                        <span className="bg-primary text-white text-[8px] font-black px-3 py-1 uppercase tracking-widest rounded-full">🔴 Live Now</span>
+                        <div className="px-2 py-1 bg-slate-50 rounded-sm flex items-center gap-2">
+                           <Users className="w-3 h-3 text-primary" />
+                           <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Active Theatre</span>
+                        </div>
+                      </div>
+                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-4 group-hover:text-primary transition-colors leading-tight">{event.title}</h3>
+                      <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed mb-8 line-clamp-3">
+                        {event.description || 'Exclusive curated collection auction session.'}
+                      </p>
+                      
+                      <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                         <div className="flex items-center gap-2">
+                           <Clock className="w-3.5 h-3.5 text-primary" />
+                           <span className="text-[10px] font-black text-slate-800 tracking-tight">Started at {event.startTime}</span>
+                         </div>
+                      </div>
+                    </div>
+                    <div className="px-8 pb-8">
+                      <Button className="w-full bg-slate-800 hover:bg-slate-900 text-white font-black uppercase tracking-[0.2em] text-[9px] rounded-sm h-14 transition-all group-hover:translate-y-[-2px]">
+                        Enter Live Theatre
+                      </Button>
+                    </div>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
         )}
 
-        {/* Upcoming Events Section */}
         {upcomingEvents.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-4">Upcoming Events</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-8">
+            <div className="flex items-center gap-4">
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] whitespace-nowrap">Upcoming Collections</h2>
+              <div className="h-px bg-slate-100 flex-1"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {upcomingEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
+                <Link key={event.id} href={`/events/${event.id}`} className="group h-full">
+                  <Card className="bg-white border-none overflow-hidden rounded-sm shadow-sm hover:shadow-md transition-all duration-500 h-full flex flex-col relative opacity-90 hover:opacity-100">
+                    <div className="p-8 flex-1">
+                      <div className="flex justify-between items-start mb-6">
+                        <span className="bg-slate-100 text-slate-400 text-[8px] font-black px-3 py-1 uppercase tracking-widest rounded-full">Scheduled</span>
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registry ID: {event.id.substring(0, 8)}</div>
+                      </div>
+                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-4 leading-tight group-hover:text-primary transition-colors">{event.title}</h3>
+                      <div className="space-y-4 pt-6 mt-6 border-t border-slate-50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-sm bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            <Calendar className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Execution Date</p>
+                            <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight">{new Date(event.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-sm bg-slate-50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            <Clock className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Premiere Signal</p>
+                            <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight">Live at {event.startTime}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="px-8 pb-8">
+                      <Button variant="outline" className="w-full border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-800 font-black uppercase tracking-widest text-[9px] rounded-sm h-14 transition-all">
+                        View Catalogue
+                      </Button>
+                    </div>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
         )}
 
-        {/* All Events Section */}
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-4">All Events</h2>
-          {loading ? (
-            <p className="text-slate-400">Loading events...</p>
-          ) : events.length === 0 ? (
-            <Card className="bg-slate-800 border-slate-700 p-8 text-center">
-              <Calendar className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400">No events scheduled yet</p>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Default State */}
+        {events.length === 0 && !loading && (
+          <Card className="bg-white border-none p-24 text-center rounded-sm shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-slate-100" />
+            <Calendar className="w-16 h-16 text-slate-50 mx-auto mb-8" />
+            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tighter mb-4">No events currently scheduled</h2>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mb-10 max-w-xs mx-auto leading-relaxed">We're synchronizing elite collections for the next premiere series. Stay tuned for authorization signals.</p>
+            {user?.userType === 'SELLER' && (
+              <Link href="/seller/events/create">
+                <Button className="bg-primary hover:bg-primary/95 text-white font-black uppercase tracking-widest text-[10px] rounded-sm h-16 px-12 transition-all shadow-lg shadow-primary/20">
+                  Host Premiere Event
+                </Button>
+              </Link>
+            )}
+          </Card>
+        )}
+
+        {loading && (
+          <div className="py-24 text-center">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Synchronizing Registry...</p>
+          </div>
+        )}
       </main>
     </div>
   )

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { AlertCircle, ArrowLeft } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Clock } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import Header from '@/components/header'
 import Link from 'next/link'
@@ -109,160 +109,193 @@ export default function CreateProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <Header user={user} onLogout={handleLogout} />
+    <div className="min-h-screen bg-[#f8f9fa] p-8 md:p-12">
+      <main className="mx-auto max-w-4xl space-y-10">
+        {/* Header Row */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black uppercase tracking-tight text-slate-800 leading-none">Onboard Asset</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2 font-black">Official Registry Documentation</p>
+          </div>
+          <div className="flex gap-2 text-[10px] items-center">
+              <span className="text-slate-400 uppercase font-bold tracking-widest">Seller</span>
+              <span className="text-slate-300">/</span>
+              <span className="text-primary font-black uppercase tracking-widest">Inventory</span>
+              <span className="text-slate-300">/</span>
+              <span className="text-slate-800 font-black uppercase tracking-widest">Create</span>
+          </div>
+        </div>
 
-      <main className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <Link href="/seller/dashboard">
-          <Button variant="outline" className="mb-6 text-slate-300 hover:text-white border-slate-600 bg-transparent">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+          <Button variant="outline" className="text-slate-400 border-slate-200 hover:bg-white hover:text-primary transition-all rounded-sm font-black uppercase tracking-widest text-[9px] h-9 px-6 bg-white shadow-sm">
+            <ArrowLeft className="w-3.5 h-3.5 mr-2" />
+            Return to Command Center
           </Button>
         </Link>
 
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-2">Create New Product</h1>
-          <p className="text-slate-400 mb-8">List a new product for auction</p>
+        <Card className="bg-white border-none p-10 rounded-sm shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-primary" />
+          
+          {error && (
+            <Alert variant="destructive" className="mb-8 rounded-sm border-none bg-red-50 text-red-600">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="font-bold uppercase tracking-widest text-[10px]">{error}</AlertDescription>
+            </Alert>
+          )}
 
-          <Card className="bg-slate-800 border-slate-700 p-8">
-            {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {success && (
+            <Alert className="mb-8 bg-green-50 border-none rounded-sm">
+              <AlertDescription className="text-green-600 font-black uppercase tracking-widest text-[10px] text-center">
+                Asset created successfully! Synchronizing registry...
+              </AlertDescription>
+            </Alert>
+          )}
 
-            {success && (
-              <Alert className="mb-6 bg-green-900 border-green-700">
-                <AlertDescription className="text-green-200">
-                  Product created successfully! Redirecting...
-                </AlertDescription>
-              </Alert>
-            )}
+          <form onSubmit={handleSubmit} className="space-y-12">
+            {/* Product Details */}
+            <div className="space-y-10">
+              <div className="border-b border-slate-50 pb-4 flex items-center justify-between">
+                <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Asset Specification</h2>
+                <div className="p-1 px-3 bg-slate-50 rounded-full">
+                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Phase 01 / Technical Identity</p>
+                </div>
+              </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Product Details */}
-              <div>
-                <h2 className="text-lg font-semibold text-white mb-4">Product Details</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Product Title *</label>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Asset Official Title *</label>
                     <Input
                       type="text"
                       name="title"
-                      placeholder="Enter product title"
+                      placeholder="e.g. 2024 LUXURY SEDAN SIGNATURE EDITION"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+                      className="bg-slate-50 border-none text-slate-800 placeholder:text-slate-300 rounded-sm h-12 font-bold uppercase tracking-tight text-sm focus-visible:ring-1 focus-visible:ring-primary transition-all"
                       required
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Description *</label>
-                    <Textarea
-                      name="description"
-                      placeholder="Describe your product in detail"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 min-h-32"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Product Image</label>
-                    <ImageUpload
-                      value={formData.image}
-                      onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
-                      onError={(err) => setError(err)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Category *</label>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Market Classification *</label>
                     <select
                       name="categoryId"
                       value={formData.categoryId}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-700 border border-slate-600 text-white rounded-md p-2"
+                      className="w-full bg-slate-50 border-none text-slate-800 rounded-sm p-3 h-12 font-bold uppercase tracking-widest text-[10px] focus:ring-1 focus:ring-primary outline-none transition-all cursor-pointer"
                       required
                     >
-                      <option value="">Select a category</option>
+                      <option value="">SELECT CLASSIFICATION</option>
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.id}>
-                          {cat.name}
+                          {cat.name.toUpperCase()}
                         </option>
                       ))}
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Starting Price (RWF) *</label>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Initial Valuation (RWF) *</label>
                     <Input
                       type="number"
                       name="startingPrice"
-                      placeholder="5000"
+                      placeholder="50,000"
                       step="1"
                       min="0"
                       value={formData.startingPrice}
                       onChange={handleInputChange}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+                      className="bg-slate-50 border-none text-slate-800 placeholder:text-slate-300 rounded-sm h-12 font-black text-xl tracking-tighter focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Full Descriptive Narrative *</label>
+                    <Textarea
+                      name="description"
+                      placeholder="Provide comprehensive details about the asset's condition, provenance, and specifications..."
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      className="bg-slate-50 border-none text-slate-700 placeholder:text-slate-300 rounded-sm min-h-[172px] p-4 font-medium text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-primary transition-all resize-none"
                       required
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Auction Details */}
-              <div className="border-t border-slate-700 pt-6">
-                <h2 className="text-lg font-semibold text-white mb-4">Auction Details</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Auction Start Time *</label>
-                    <Input
-                      type="datetime-local"
-                      name="startTime"
-                      value={auctionData.startTime}
-                      onChange={handleAuctionChange}
-                      className="bg-slate-700 border-slate-600 text-white"
-                      required
-                    />
-                  </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Visual Authentication Port</label>
+                <div className="p-8 bg-slate-50 border-2 border-slate-100 border-dashed rounded-sm hover:border-primary/30 transition-all">
+                  <ImageUpload
+                    value={formData.image}
+                    onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
+                    onError={(err) => setError(err)}
+                  />
+                  <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-6">Upload High-Fidelity Asset Imagery</p>
+                </div>
+              </div>
+            </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Auction End Time *</label>
-                    <Input
-                      type="datetime-local"
-                      name="endTime"
-                      value={auctionData.endTime}
-                      onChange={handleAuctionChange}
-                      className="bg-slate-700 border-slate-600 text-white"
-                      required
-                    />
-                  </div>
+            {/* Auction Schedule */}
+            <div className="space-y-10">
+              <div className="border-b border-slate-50 pb-4 flex items-center justify-between">
+                <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Auction Parameters</h2>
+                <div className="p-1 px-3 bg-slate-50 rounded-full">
+                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Phase 02 / Temporal Window</p>
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="flex gap-4">
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-black font-semibold"
-                >
-                  {loading ? 'Creating...' : 'Create Product & Auction'}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <Clock className="w-3 h-3 text-primary" /> Commencement Timestamp *
+                  </label>
+                  <Input
+                    type="datetime-local"
+                    name="startTime"
+                    value={auctionData.startTime}
+                    onChange={handleAuctionChange}
+                    className="bg-slate-50 border-none text-slate-800 rounded-sm h-12 font-bold focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <Clock className="w-3 h-3 text-primary" /> Conclusion Timestamp *
+                  </label>
+                  <Input
+                    type="datetime-local"
+                    name="endTime"
+                    value={auctionData.endTime}
+                    onChange={handleAuctionChange}
+                    className="bg-slate-50 border-none text-slate-800 rounded-sm h-12 font-bold focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex flex-col md:flex-row gap-6 pt-10 border-t border-slate-50">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-[2] bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-[0.3em] text-[11px] rounded-sm h-16 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-2px] active:translate-y-0"
+              >
+                {loading ? 'SYNCHRONIZING RECORDS...' : 'AUTHORIZE & PUBLISH ASSET'}
+              </Button>
+              <Link href="/seller/dashboard" className="flex-1">
+                <Button variant="outline" type="button" className="w-full text-slate-400 border-slate-200 hover:bg-slate-50 hover:text-slate-800 rounded-sm h-16 font-black uppercase tracking-widest text-[11px] transition-all">
+                  CANCEL
                 </Button>
-                <Link href="/seller/dashboard" className="flex-1">
-                  <Button variant="outline" className="w-full text-slate-300 hover:text-white border-slate-600 bg-transparent">
-                    Cancel
-                  </Button>
-                </Link>
-              </div>
-            </form>
-          </Card>
-        </div>
+              </Link>
+            </div>
+          </form>
+        </Card>
       </main>
     </div>
   )

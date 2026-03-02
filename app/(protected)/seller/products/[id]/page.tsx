@@ -8,7 +8,7 @@ import Header from '@/components/header'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Edit, Trash2, Package, Gavel, Calendar, Clock } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, Package, Gavel, Calendar, Clock, TrendingUp } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ export default function SellerProductDetailPage() {
   const params = useParams()
   const productId = params.id as string
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -86,110 +86,168 @@ export default function SellerProductDetailPage() {
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading product details...</div>
-
-  if (!product) return <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-4">
-    <p>Product not found</p>
-    <Button onClick={() => router.back()}>Go Back</Button>
-  </div>
+  if (loading) return (
+    <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
+      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 animate-pulse">Synchronizing Asset Parameters...</p>
+    </div>
+  )
+  
+  if (!product) return (
+    <div className="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center space-y-8 p-16">
+      <div className="p-10 bg-white border-2 border-slate-100 border-dashed rounded-sm text-center">
+        <Package className="w-16 h-16 text-slate-100 mx-auto mb-6" />
+        <p className="text-slate-800 font-black uppercase tracking-widest text-sm">Asset not identified in registry</p>
+      </div>
+      <Button onClick={() => router.push('/seller/dashboard')} className="bg-slate-800 hover:bg-slate-900 text-white rounded-sm font-black uppercase tracking-widest text-[10px] h-14 px-12 shadow-lg transition-all">
+        <ArrowLeft className="w-4 h-4 mr-3" />
+        Return to Command Center
+      </Button>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <Header user={user} onLogout={logout} />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => router.push('/seller/dashboard')} className="text-slate-400 hover:text-white p-2">
-              <ArrowLeft className="w-5 h-5" />
+    <div className="min-h-screen bg-[#f8f9fa] p-8 md:p-12 lg:p-16">
+      <main className="mx-auto max-w-7xl space-y-16">
+        {/* Navigation & Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
+          <div className="flex items-center gap-6">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push('/seller/dashboard')} 
+              className="text-slate-400 border-slate-200 hover:bg-white hover:text-primary rounded-sm font-black uppercase tracking-widest text-[10px] h-12 px-6 bg-white shadow-sm transition-all"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Registry
             </Button>
-            <h1 className="text-3xl font-bold text-white">Product Details</h1>
+            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Internal Registry Asset</p>
+              <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight leading-none">Asset Intelligence</h1>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="border-slate-700 text-slate-300">
+          <div className="flex gap-4">
+            <Button variant="outline" className="border-slate-200 text-slate-400 hover:bg-white hover:text-primary rounded-sm font-black uppercase tracking-widest text-[10px] h-12 px-8 bg-white shadow-sm transition-all">
                <Edit className="w-4 h-4 mr-2" />
-               Edit
+               Modify Records
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={product.status !== 'AVAILABLE'}>
+            <Button 
+              variant="destructive" 
+              onClick={handleDelete} 
+              disabled={product.status !== 'AVAILABLE'}
+              className="bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] rounded-sm h-12 px-8 shadow-lg shadow-primary/20 transition-all hover:translate-y-[-1px]"
+            >
                <Trash2 className="w-4 h-4 mr-2" />
-               Delete
+               Decommission
             </Button>
           </div>
-        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {error && (
+          <div className="mb-10 p-4 bg-primary/10 border border-primary text-center">
+             <p className="text-primary font-black uppercase tracking-widest text-[10px]">{error}</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
            {/* Left: Product Image & Basic Info */}
-           <div className="lg:col-span-2 space-y-6">
-              <Card className="bg-slate-800 border-slate-700 overflow-hidden">
-                 <div className="h-96 bg-slate-900 flex items-center justify-center">
-                    {product.image ? (
-                       <img src={product.image} alt={product.title} className="w-full h-full object-contain" />
-                    ) : (
-                       <Package className="w-20 h-20 text-slate-700" />
-                    )}
-                 </div>
-                 <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
+           <div className="lg:col-span-8 space-y-12">
+               <Card className="bg-white border-none rounded-sm overflow-hidden shadow-xl relative">
+                  <div className="absolute top-0 left-0 w-full h-1.5 bg-primary z-10" />
+                  <div className="h-[400px] bg-slate-50 relative group overflow-hidden border-b border-slate-100">
+                     {product.image ? (
+                        <img src={product.image} alt={product.title} className="w-full h-full object-cover transition-all duration-700" />
+                     ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                           <Package className="w-20 h-20 text-slate-100" />
+                        </div>
+                     )}
+                     <div className="absolute bottom-0 left-0 bg-slate-800 text-white font-black uppercase tracking-widest text-[9px] py-3 px-6">
+                        {product.category?.name || 'ASSET CLASSIFICATION'}
+                     </div>
+                  </div>
+                  <div className="p-10">
+                    <div className="flex justify-between items-start mb-8 pb-6 border-b border-slate-50">
                        <div>
-                          <Badge className="mb-2 bg-amber-500/10 text-amber-500 border-amber-500/20">{product.category.name}</Badge>
-                          <h2 className="text-2xl font-bold text-white">{product.title}</h2>
+                          <h2 className="text-3xl font-black text-slate-800 uppercase tracking-tight mb-2">{product.title}</h2>
+                          <div className="flex items-center gap-3">
+                             <div className={`w-2.5 h-2.5 rounded-full ${product.status === 'AVAILABLE' ? 'bg-green-500' : 'bg-primary'}`}></div>
+                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{product.status}</p>
+                          </div>
                        </div>
-                       <Badge variant={product.status === 'AVAILABLE' ? 'secondary' : 'default'} className="uppercase">
-                          {product.status}
-                       </Badge>
+                       <div className="px-4 py-1.5 bg-slate-50 rounded-full">
+                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Official Registry Entry</p>
+                       </div>
                     </div>
-                    <p className="text-slate-400 whitespace-pre-wrap">{product.description}</p>
-                 </div>
-              </Card>
+                    <div className="space-y-4">
+                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest opacity-60">Asset Specification Details</p>
+                       <p className="text-md font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">{product.description}</p>
+                    </div>
+                  </div>
+               </Card>
 
               {/* Status Section */}
-              <Card className="bg-slate-800 border-slate-700 p-6">
-                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-blue-500" />
-                    Bidding History / Status
-                 </h3>
-                 <div className="space-y-4">
+               <Card className="bg-white border-none p-10 rounded-sm shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-50"></div>
+                  <h3 className="text-[10px] font-black text-slate-800 mb-10 uppercase tracking-widest flex items-center gap-3 border-b border-slate-50 pb-4">
+                     <Clock className="w-4 h-4 text-primary" />
+                     Orchestration Parameters
+                  </h3>
+                  <div className="space-y-8">
                     {product.status === 'AVAILABLE' ? (
-                       <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700 text-center">
-                          <p className="text-slate-400 mb-4">This product is available but not currently in any auction.</p>
-                          <div className="flex gap-2 justify-center">
-                             <Link href={`/seller/events`}>
-                                <Button className="bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black border border-amber-500/20">Add to Event</Button>
+                       <div className="bg-slate-50 p-8 rounded-sm border border-slate-100 text-center space-y-10">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose max-w-lg mx-auto">
+                            This asset is currently residing in the secure repository and is authorized for deployment to active events or private bidding halls.
+                          </p>
+                          <div className="flex flex-col md:flex-row gap-4 justify-center">
+                             <Link href={`/seller/dashboard?tab=events`} className="flex-1">
+                                <Button variant="outline" className="w-full bg-white text-slate-600 border-slate-200 hover:text-primary rounded-sm font-black uppercase tracking-widest text-[10px] h-14 transition-all">
+                                  Assign to Event
+                                </Button>
                              </Link>
                              
                              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                                 <DialogTrigger asChild>
-                                   <Button className="bg-amber-500 text-black font-medium">Create Timed Auction</Button>
+                                   <Button className="flex-1 bg-slate-800 text-white hover:bg-slate-900 rounded-sm font-black uppercase tracking-widest text-[10px] h-14 shadow-md transition-all">
+                                      Rapid Synchronization
+                                   </Button>
                                 </DialogTrigger>
-                                <DialogContent className="bg-slate-900 border-slate-700 text-white">
-                                   <DialogHeader>
-                                      <DialogTitle>Start Timed Online Auction</DialogTitle>
+                                <DialogContent className="bg-white border-none rounded-sm shadow-2xl p-0 overflow-hidden max-w-lg">
+                                   <div className="h-1.5 bg-primary w-full" />
+                                   <DialogHeader className="p-10 border-b border-slate-50">
+                                      <DialogTitle className="text-xl font-black text-slate-800 uppercase tracking-tight">Active Operation Init</DialogTitle>
+                                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">Temporal Window Configuration</p>
                                    </DialogHeader>
-                                   <form onSubmit={handleStartAuction} className="space-y-4 pt-4">
-                                      <div className="space-y-2">
-                                         <label className="text-sm text-slate-400">Start Time</label>
+                                   <form onSubmit={handleStartAuction} className="p-10 space-y-8">
+                                      <div className="space-y-3">
+                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            Commencement Timestamp
+                                         </label>
                                          <Input 
                                            required
                                            type="datetime-local" 
-                                           className="bg-slate-800 border-slate-700" 
+                                           className="bg-slate-50 border-none rounded-sm h-12 text-slate-800 font-bold focus-visible:ring-1 focus-visible:ring-primary transition-all" 
                                            value={auctionTimes.startTime}
                                            onChange={e => setAuctionTimes({...auctionTimes, startTime: e.target.value})}
                                          />
                                       </div>
-                                      <div className="space-y-2">
-                                         <label className="text-sm text-slate-400">End Time</label>
+                                      <div className="space-y-3">
+                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            Termination Timestamp
+                                         </label>
                                          <Input 
                                            required
                                            type="datetime-local" 
-                                           className="bg-slate-800 border-slate-700"
+                                           className="bg-slate-50 border-none rounded-sm h-12 text-slate-800 font-bold focus-visible:ring-1 focus-visible:ring-primary transition-all"
                                            value={auctionTimes.endTime}
                                            onChange={e => setAuctionTimes({...auctionTimes, endTime: e.target.value})}
                                          />
                                       </div>
-                                      <DialogFooter>
-                                         <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                         <Button type="submit" disabled={actionLoading} className="bg-amber-500 text-black">
-                                            {actionLoading ? 'Creating...' : 'Launch Auction'}
+                                      <DialogFooter className="pt-8 flex flex-col md:flex-row gap-4 border-t border-slate-50">
+                                         <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 rounded-sm font-black uppercase tracking-widest text-[10px] h-14 border-slate-200 text-slate-400 hover:bg-slate-50">
+                                            Cancel
+                                         </Button>
+                                         <Button type="submit" disabled={actionLoading} className="flex-1 bg-primary text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-sm shadow-lg shadow-primary/20">
+                                            {actionLoading ? 'SYCHRONIZING...' : 'AUTHORIZE ACTIVATION'}
                                          </Button>
                                       </DialogFooter>
                                    </form>
@@ -198,45 +256,62 @@ export default function SellerProductDetailPage() {
                           </div>
                        </div>
                     ) : (
-                       <p className="text-slate-500 italic">Historical data or current bidding would appear here.</p>
+                       <div className="p-10 bg-slate-50 border border-slate-100 rounded-sm text-center">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic leading-loose">
+                             Asset is currently locked in an active acquisition protocol. Transaction streams will be finalized upon phase completion.
+                          </p>
+                       </div>
                     )}
-                 </div>
-              </Card>
+                  </div>
+               </Card>
            </div>
 
            {/* Right: Pricing & Meta */}
-           <div className="space-y-6">
-              <Card className="bg-slate-800 border-slate-700 p-6">
-                 <p className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">Pricing</p>
-                 <div className="space-y-4">
-                    <div>
-                       <p className="text-xs text-slate-500 mb-1">Starting Price</p>
-                       <p className="text-3xl font-black text-amber-500">{formatCurrency(product.startingPrice)}</p>
-                    </div>
-                    <div>
-                       <p className="text-xs text-slate-500 mb-1">Current Price</p>
-                       <p className="text-2xl font-bold text-slate-300">{formatCurrency(product.currentPrice || product.startingPrice)}</p>
-                    </div>
-                 </div>
-              </Card>
+           <div className="lg:col-span-4 space-y-10">
+               <Card className="bg-white border-none p-8 rounded-sm shadow-xl border-t-4 border-t-primary">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-10">Valuation Metrics</p>
+                  <div className="space-y-6">
+                     <div className="p-5 bg-slate-50 rounded-sm">
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Base Threshold</p>
+                        <p className="text-3xl font-black text-slate-800 tracking-tight">{formatCurrency(product.startingPrice)}</p>
+                     </div>
+                     <div className="p-5 border-2 border-primary/10 bg-red-50/30 rounded-sm">
+                        <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-2">Market Valuation</p>
+                        <p className="text-3xl font-black text-primary tracking-tight">{formatCurrency(product.currentPrice || product.startingPrice)}</p>
+                        <div className="flex items-center gap-2 mt-3 text-primary text-[8px] font-black uppercase ">
+                           <TrendingUp className="w-3 h-3" />
+                           <span>Registry Appreciation Active</span>
+                        </div>
+                     </div>
+                  </div>
+               </Card>
 
-              <Card className="bg-slate-800 border-slate-700 p-6">
-                 <p className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-4">Engagement</p>
-                 <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                       <span className="text-slate-400 flex items-center gap-2">
-                          <Gavel className="w-4 h-4" /> Bids
-                       </span>
-                       <span className="text-white font-bold">0</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                       <span className="text-slate-400 flex items-center gap-2">
-                          <Calendar className="w-4 h-4" /> Created
-                       </span>
-                       <span className="text-white">{new Date(product.createdAt).toLocaleDateString()}</span>
-                    </div>
-                 </div>
-              </Card>
+               <Card className="bg-white border-none p-8 rounded-sm shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
+                     <Gavel className="w-32 h-32 text-slate-900" />
+                  </div>
+                  <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-10">Meta-Data Registry</p>
+                  <div className="space-y-4">
+                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-sm">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                           <Gavel className="w-3.5 h-3.5 text-primary" /> Active Bids
+                        </span>
+                        <span className="text-slate-800 font-black text-lg">0</span>
+                     </div>
+                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-sm">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                           <Calendar className="w-3.5 h-3.5 text-primary" /> Entry Date
+                        </span>
+                        <span className="text-slate-800 font-black text-[10px] uppercase">{new Date(product.createdAt).toLocaleDateString()}</span>
+                     </div>
+                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-sm">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                           <Package className="w-3.5 h-3.5 text-primary" /> Serial Key
+                        </span>
+                        <span className="text-slate-800 font-mono text-[9px]">{productId.substring(0, 16).toUpperCase()}</span>
+                     </div>
+                  </div>
+               </Card>
            </div>
         </div>
       </main>

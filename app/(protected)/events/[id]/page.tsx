@@ -10,12 +10,13 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, Clock, TrendingUp, Users, ArrowLeft, Zap, Package } from 'lucide-react'
+import { AlertCircle, Clock, TrendingUp, Users, ArrowLeft, Zap, Package, Settings, Terminal, Calendar } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import Header from '@/components/header'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
 import { socket } from '@/lib/socket'
+import { formatDistanceToNow } from 'date-fns'
 
 interface Event {
   id: string
@@ -25,6 +26,7 @@ interface Event {
   startTime: string
   status: string
   products?: string[]
+  createdBy?: string
 }
 
 interface EventProduct {
@@ -348,344 +350,368 @@ export default function EventDetailPage() {
   const highestBid = currentBids.length > 0 ? Math.max(...currentBids.map((b) => b.amount)) : currentProduct?.product?.startingPrice || 0
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-background text-white">
       <Header user={user} onLogout={handleLogout} />
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <Link href="/events">
-          <Button variant="outline" className="mb-6 text-slate-300 hover:text-white border-slate-600 bg-transparent">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Events
-          </Button>
-        </Link>
-
-        {/* Event Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+      <main className="container mx-auto px-4 py-12">
+        {/* Navigation & Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+          <div className="flex items-center gap-6">
+            <Link href="/events">
+              <Button variant="outline" className="text-white border-border hover:bg-white hover:text-black transition-all rounded-none font-black uppercase tracking-widest text-[10px] h-10 px-6">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Return to Experiences
+              </Button>
+            </Link>
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">{event.title}</h1>
-              {event.description && <p className="text-slate-400 mb-2">{event.description}</p>}
-              <div className="flex gap-4 text-sm text-slate-400">
-                <span>📅 {new Date(event.date).toLocaleDateString()}</span>
-                <span>🕐 {event.startTime}</span>
+              <h1 className="text-4xl font-black text-white mb-2 uppercase tracking-tighter">{event.title}</h1>
+              <div className="flex items-center gap-4">
+                <Badge className={`${event.status === 'LIVE' ? 'bg-primary animate-pulse' : 'bg-white text-black'} text-white rounded-none font-black uppercase tracking-widest text-[8px] px-3`}>
+                  {event.status === 'LIVE' ? 'LIVE THEATRE ACTIVE' : 'UPCOMING PHASE'}
+                </Badge>
+                <p className="text-muted-foreground font-black uppercase tracking-widest text-[8px] flex items-center gap-2">
+                   <Calendar className="w-3 h-3 text-primary" /> {new Date(event.date).toLocaleDateString()} <span className="text-border">|</span> <Clock className="w-3 h-3 text-primary" /> {event.startTime}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              {user?.userType === 'SELLER' && (
-                <div className="flex gap-2">
-                  <Link href={`/seller/events/${event.id}/manage`}>
-                    <Button variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500 hover:text-black bg-transparent">
-                      Manage Items
-                    </Button>
-                  </Link>
-                  {event.status === 'LIVE' && (
-                    <Button 
-                      onClick={handleEndEvent} 
-                      variant="destructive"
-                      className="bg-red-600 hover:bg-red-700 font-semibold"
-                      disabled={managing}
-                    >
-                      End Event
-                    </Button>
-                  )}
-                </div>
-              )}
-              <Badge
-                className={`${
-                  event.status === 'LIVE'
-                    ? 'bg-green-600 hover:bg-green-700 animate-pulse'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-              >
-                {event.status === 'LIVE' ? '🔴 LIVE' : 'UPCOMING'}
-              </Badge>
-            </div>
           </div>
+          
+          {user?.id === event.createdBy && (
+            <Link href={`/seller/events/${event.id}/manage`}>
+              <Button className="bg-white hover:bg-white/90 text-black font-black uppercase tracking-widest text-xs rounded-none h-16 px-10 shadow-xl transition-all hover:scale-105 active:scale-95">
+                <Settings className="w-5 h-5 mr-3" />
+                Theatre Operations
+              </Button>
+            </Link>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Auction Area */}
-          <div className="lg:col-span-2 space-y-6">
-            {eventProducts.length === 0 ? (
-              <Card className="bg-slate-800 border-slate-700 p-12 text-center">
-                <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">No items in this event yet</h2>
-                <p className="text-slate-400 mb-6">Waiting for the host to add properties to this auction collection.</p>
-                {user?.userType === 'SELLER' && (
-                  <Link href={`/seller/events/${eventId}/manage`}>
-                    <Button className="bg-amber-500 hover:bg-amber-600 text-black">
-                      Manage Event Items
-                    </Button>
-                  </Link>
-                )}
-              </Card>
-            ) : (
-              <>
-                {/* Current Product */}
-            <Card className="bg-slate-800 border-slate-700 overflow-hidden">
-              <div className="bg-gradient-to-r from-amber-600 to-amber-700 p-6 text-white">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm">Lot {currentProductIndex + 1} of {eventProducts.length}</span>
-                  <span className="text-sm">Live Event</span>
-                </div>
-                <h2 className="text-3xl font-bold">{currentProduct.product.title}</h2>
-              </div>
+        {error && (
+          <Alert variant="destructive" className="mb-10 rounded-none border-primary bg-primary/10">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="font-black uppercase tracking-widest text-[10px]">{error}</AlertDescription>
+          </Alert>
+        )}
 
-              {/* Product Image Area */}
-              <div className="h-96 bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center relative overflow-hidden">
-                {currentProduct.product.image ? (
-                  <img src={currentProduct.product.image} alt={currentProduct.product.title} className="w-full h-full object-cover" />
-                ) : (
-                  <Zap className="w-24 h-24 text-amber-500 opacity-50" />
-                )}
-                
-                {/* Seller Controls Over Image */}
-                {user?.userType === 'SELLER' && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <div className="flex gap-4">
-                      {event.status === 'SCHEDULED' && (
-                        <Button onClick={handleStartEvent} className="bg-green-600 hover:bg-green-700">Start Event</Button>
-                      )}
-                      {event.status === 'LIVE' && currentEventProduct !== currentProduct.id && (
-                        <div className="flex flex-col gap-2 items-center">
-                          <div className="flex items-center gap-2 bg-black/40 p-2 rounded border border-white/20">
-                            <span className="text-xs text-white">Duration:</span>
-                            <Input 
-                              type="number" 
-                              value={lotDuration} 
-                              onChange={(e) => setLotDuration(e.target.value)}
-                              className="w-16 h-8 bg-slate-900 border-slate-700 text-xs"
-                              min="1"
-                            />
-                            <span className="text-xs text-white">mins</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Main Stage: Current Lot */}
+          <div className="lg:col-span-8 space-y-12">
+            {currentProduct ? (
+              <Card className="bg-card border-border rounded-none overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border-t-8 border-t-primary">
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                  <div className="h-[500px] bg-black relative group overflow-hidden">
+                    {currentProduct.product.image ? (
+                      <img src={currentProduct.product.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={currentProduct.product.title} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-20 h-20 text-muted-foreground/10" />
+                      </div>
+                    )}
+                    <div className="absolute top-0 left-0 bg-primary text-white font-black uppercase tracking-widest text-[10px] py-3 px-6 shadow-xl">
+                      LOT {currentProductIndex + 1} OF {eventProducts.length}
+                    </div>
+                    {currentEventProduct === currentProduct.id && (
+                      <div className="absolute bottom-6 left-6 right-6">
+                          <Badge className="bg-white/10 backdrop-blur-md text-white border-white/20 rounded-none font-black uppercase tracking-widest text-[8px] mb-2">
+                            ACTIVE ACQUISITION PHASE
+                          </Badge>
+                          <h2 className="text-2xl font-black text-white uppercase tracking-tighter">{currentProduct.product.title}</h2>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-10 flex flex-col justify-between">
+                    <div className="space-y-8">
+                       <div>
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mb-4">Live Bid Value</p>
+                          <p className="text-6xl font-black text-white tracking-tighter">{formatCurrency(highestBid)}</p>
+                          <div className="flex items-center gap-2 mt-4 text-primary text-[10px] font-black uppercase tracking-widest">
+                            <Zap className="w-3 h-3 fill-primary" />
+                            <span>Real-time Dynamic Sync</span>
                           </div>
-                          <Button onClick={() => handleActivateProduct(currentProduct.id)} className="bg-amber-500 text-black hover:bg-amber-600">Play Product</Button>
-                        </div>
-                      )}
-                      {event.status === 'LIVE' && currentEventProduct === currentProduct.id && (
-                        <Button onClick={() => handleEndProduct(currentProduct.id)} className="bg-red-600 hover:bg-red-700">Stop (End Lot)</Button>
-                      )}
+                       </div>
+
+                       {currentEventProduct === currentProduct.id && timeLeft !== null && (
+                         <div className="space-y-4">
+                            <div className="flex justify-between items-center bg-black p-4 border border-border">
+                               <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">PHASE TERMINATION</span>
+                               <span className={`text-2xl font-black tracking-tighter ${timeLeft < 30 ? 'text-primary animate-pulse' : 'text-white'}`}>
+                                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                               </span>
+                            </div>
+                         </div>
+                       )}
+
+                       <div className="space-y-4">
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">Asset Strategy</p>
+                          <p className="text-sm font-medium text-white leading-loose line-clamp-4">{currentProduct.product.description}</p>
+                       </div>
+                    </div>
+
+                    <div className="pt-10 border-t border-border space-y-6">
+                       {currentEventProduct === currentProduct.id && currentBids.length > 0 && currentBids[0].userId === user?.id && (
+                          <div className="p-4 bg-primary/10 border border-primary text-center">
+                             <p className="text-primary font-black uppercase tracking-widest text-[10px]">CURRENTLY UNDER YOUR CONTROL</p>
+                          </div>
+                       )}
+                       
+                       {event.status === 'LIVE' && currentEventProduct === currentProduct.id ? (
+                        <form onSubmit={handlePlaceBid} className="space-y-6">
+                           <div className="relative">
+                             <Input
+                               type="number"
+                               min={highestBid + 1}
+                               step="1"
+                               placeholder={`MIN: ${highestBid + 1}`}
+                               value={bidAmount}
+                               onChange={(e) => setBidAmount(e.target.value)}
+                               className="bg-black border-border rounded-none h-16 text-2xl font-black tracking-tighter px-6 transition-all focus:border-primary pr-20"
+                             />
+                             <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">RWF</div>
+                           </div>
+                           <Button 
+                             type="submit" 
+                             disabled={placing || !bidAmount}
+                             className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs rounded-none h-16 shadow-2xl transition-all"
+                           >
+                             {placing ? 'AUTHORIZING...' : 'COMMIT SECURE BID'}
+                           </Button>
+                        </form>
+                       ) : (
+                         <div className="p-6 bg-black border border-border text-center">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] italic leading-loose">
+                               {event.status === 'LIVE' ? 'PENDING OPERATOR AUTHORIZATION' : 'ACCESS PENDING SYSTEM INITIALIZATION'}
+                            </p>
+                         </div>
+                       )}
+
+                       <div className="flex gap-4">
+                        <Button
+                          onClick={previousProduct}
+                          disabled={currentProductIndex === 0}
+                          variant="outline"
+                          className="flex-1 text-white border-border hover:bg-white hover:text-black rounded-none font-black uppercase tracking-widest text-[9px] h-12 transition-all"
+                        >
+                          ← PREVIOUS
+                        </Button>
+                        <Button
+                          onClick={nextProduct}
+                          disabled={currentProductIndex === eventProducts.length - 1}
+                          variant="outline"
+                          className={`flex-1 ${success && !success.includes('Winner:') ? 'bg-primary text-white border-primary' : 'text-white border-border'} hover:bg-white hover:text-black rounded-none font-black uppercase tracking-widest text-[9px] h-12 transition-all`}
+                        >
+                           NEXT →
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Controls */}
-              <div className="p-6 border-t border-slate-700">
-                <div className="flex gap-4">
-                  <Button
-                    onClick={previousProduct}
-                    disabled={currentProductIndex === 0}
-                    variant="outline"
-                    className="flex-1 text-slate-300 hover:text-white border-slate-600 bg-transparent"
-                  >
-                    ← Previous Lot
-                  </Button>
-                  <Button
-                    onClick={nextProduct}
-                    disabled={currentProductIndex === eventProducts.length - 1}
-                    variant="outline"
-                    className={`flex-1 ${success && !success.includes('Winner:') && currentProductIndex < eventProducts.length - 1 ? 'bg-amber-500 text-black border-amber-500 animate-bounce' : 'text-slate-300 border-slate-600 bg-transparent'} hover:text-white`}
-                  >
-                    {success && !success.includes('Winner:') && currentProductIndex < eventProducts.length - 1 ? 'Go to Next Lot →' : 'Next Lot →'}
-                  </Button>
                 </div>
-              </div>
-            </Card>
-           </>
-          )}
-          </div>
-
-          {/* Bidding Panel */}
-          <div className="space-y-6">
-            <Card className="bg-slate-800 border-slate-700 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-slate-400 text-sm">Current Bid</p>
-                {currentEventProduct !== currentProduct?.id && (
-                   <Badge variant="outline" className="border-slate-700 text-slate-500 uppercase">Waiting</Badge>
-                )}
-              </div>
-              <p className="text-4xl font-bold text-amber-500 mb-4">{formatCurrency(highestBid)}</p>
-
-              {currentEventProduct === currentProduct?.id && currentBids.length > 0 && (
-                <div>
-                  <p className="text-slate-400 text-xs mb-1">Led by</p>
-                  <p className="text-white font-semibold">{currentBids[0].user?.name}</p>
-                </div>
-              )}
-
-              {currentEventProduct === currentProduct?.id && timeLeft !== null && (
-                <div className="mt-4 pt-4 border-t border-slate-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-slate-400 text-sm">Time Remaining</p>
-                    <p className={`text-xl font-mono font-bold ${timeLeft < 30 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
-                      {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                    </p>
-                  </div>
-                  <div className="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-700">
-                    <div 
-                      className={`h-full transition-all duration-1000 ${timeLeft < 30 ? 'bg-red-500' : 'bg-amber-500'}`}
-                      style={{ width: `${(timeLeft / 180) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {event.status === 'LIVE' && currentEventProduct !== currentProduct?.id && (
-                <div className="mt-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700 text-center">
-                   <p className="text-xs text-slate-500 italic">This lot is currently in preview. Waiting for the host to start bidding.</p>
-                </div>
-              )}
-            </Card>
-
-            {/* Bidding Form */}
-            {event.status === 'LIVE' && currentEventProduct === currentProduct.id && (
-              <Card className="bg-slate-800 border-slate-700 p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Place Your Bid</h3>
-
-                {error && (
-                  <Alert variant="destructive" className="mb-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                {success && (
-                  <Alert className="mb-4 bg-green-900 border-green-700">
-                    <AlertDescription className="text-green-200">{success}</AlertDescription>
-                  </Alert>
-                )}
-
-                <form onSubmit={handlePlaceBid} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Bid Amount
-                    </label>
-                    <Input
-                      type="number"
-                      min={highestBid + 1}
-                      step="1"
-                      placeholder={`${(highestBid + 1)}`}
-                      value={bidAmount}
-                      onChange={(e) => setBidAmount(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
-                    />
-                    <p className="text-xs text-slate-400 mt-1">Minimum: {formatCurrency(highestBid + 1)}</p>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={placing || !bidAmount}
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold"
-                  >
-                    {placing ? 'Placing Bid...' : 'Place Bid Now'}
-                  </Button>
-                </form>
+              </Card>
+            ) : (
+              <Card className="bg-card border-border p-24 text-center rounded-none shadow-2xl border-dashed">
+                <Zap className="w-20 h-20 text-muted-foreground/10 mx-auto mb-8 animate-pulse" />
+                <h2 className="text-2xl font-black text-white uppercase tracking-widest mb-4">Theatre Suspended</h2>
+                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.4em] max-w-md mx-auto leading-loose">Waiting for the operator to initialize the next asset acquisition phase.</p>
               </Card>
             )}
 
-            {/* Live Bid Feed */}
-            <Card className="bg-slate-800 border-slate-700 p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-amber-500" />
-                Live Bids
-              </h3>
-
-              <div className="space-y-3 max-h-80 overflow-y-auto">
-                {currentBids.length === 0 ? (
-                  <p className="text-slate-400 text-sm">No bids yet. Be the first!</p>
-                ) : (
-                  currentBids.map((bid) => (
-                    <div
-                      key={bid.id}
-                      className="p-3 bg-slate-700/50 rounded-lg border border-slate-600 animate-fadeIn"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-white font-medium">{bid.user?.name}</p>
-                          <p className="text-xs text-slate-400">Just now</p>
+            {/* Event Timeline (Lot List) */}
+            <div className="space-y-8">
+              <div className="flex items-center gap-4">
+                  <h2 className="text-[10px] font-black text-white uppercase tracking-[0.4em] whitespace-nowrap">Acquisition Pipeline</h2>
+                  <div className="h-px bg-white/10 flex-1"></div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {eventProducts.map((ep, idx) => {
+                  const isActive = currentEventProduct === ep.id;
+                  const isSold = ep.product.status === 'SOLD';
+                  return (
+                    <Card key={ep.id} onClick={() => setCurrentProductIndex(idx)} className={`bg-card border-border rounded-none overflow-hidden transition-all duration-500 group relative cursor-pointer ${isActive ? 'ring-2 ring-primary border-primary' : idx === currentProductIndex ? 'border-white' : 'hover:border-white/50'}`}>
+                      <div className="h-48 bg-black relative overflow-hidden">
+                        {ep.product.image ? (
+                          <img src={ep.product.image} className={`w-full h-full object-cover transition-all duration-700 ${!isActive && idx !== currentProductIndex ? 'grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100' : ''}`} alt={ep.product.title} />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="w-8 h-8 text-muted-foreground/10" />
+                          </div>
+                        )}
+                        <div className={`absolute top-0 left-0 px-4 py-2 font-black text-[10px] shadow-xl ${isActive ? 'bg-primary text-white' : 'bg-black text-muted-foreground'}`}>
+                          LOT: {ep.order}
                         </div>
-                        <p className="text-lg font-bold text-amber-500">{formatCurrency(bid.amount)}</p>
+                        {isSold && (
+                          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+                             <Badge className="bg-white text-black rounded-none px-6 py-2 font-black uppercase tracking-widest text-[10px]">ACQUIRED</Badge>
+                          </div>
+                        )}
+                        {isActive && (
+                           <div className="absolute top-2 right-2">
+                              <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>
+                           </div>
+                        )}
                       </div>
+                      <div className="p-6">
+                        <h3 className="font-black text-white uppercase tracking-tighter text-sm mb-4 truncate group-hover:text-primary transition-colors">{ep.product.title}</h3>
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Starting Valuation</p>
+                            <p className="text-lg font-black text-white tracking-tighter">{formatCurrency(ep.product.startingPrice)}</p>
+                          </div>
+                          {isActive ? (
+                            <Button className="bg-primary text-white h-10 px-6 rounded-none font-black uppercase tracking-widest text-[9px] animate-pulse">
+                               LIVE
+                            </Button>
+                          ) : (
+                            <Badge variant="outline" className="rounded-none border-border text-muted-foreground/40 font-black uppercase tracking-widest text-[8px] h-8 px-4">
+                               PENDING
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar: Log & Controls */}
+          <div className="lg:col-span-4 space-y-10">
+            {/* Operator Controls */}
+            {user?.userType === 'SELLER' && (
+              <Card className="bg-card border-border p-8 rounded-none shadow-2xl relative overflow-hidden border-t-4 border-t-white">
+                <div className="flex items-center gap-3 mb-8">
+                  <Terminal className="w-5 h-5 text-white" />
+                  <h3 className="text-[10px] font-black text-white uppercase tracking-[0.4em]">Theatre Operations</h3>
+                </div>
+                
+                <div className="space-y-6">
+                  {event.status === 'SCHEDULED' && (
+                    <Button 
+                      onClick={handleStartEvent} 
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs h-16 rounded-none shadow-xl transition-all"
+                      disabled={managing}
+                    >
+                      INITIALIZE EVENT
+                    </Button>
+                  )}
+
+                  {event.status === 'LIVE' && currentProduct && (
+                    <div className="space-y-4">
+                      {currentEventProduct !== currentProduct.id ? (
+                        <div className="space-y-4">
+                           <div className="space-y-2">
+                              <label className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">PHASE DURATION (MINS)</label>
+                              <Input 
+                                type="number" 
+                                value={lotDuration} 
+                                onChange={(e) => setLotDuration(e.target.value)}
+                                className="bg-black border-border rounded-none h-12 text-white font-black text-lg"
+                                min="1"
+                              />
+                           </div>
+                           <Button 
+                             onClick={() => handleActivateProduct(currentProduct.id)} 
+                             className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs h-16 rounded-none transition-all"
+                             disabled={managing}
+                           >
+                             AUTHORIZE LOT
+                           </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          onClick={() => handleEndProduct(currentProduct.id)} 
+                          className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-xs h-16 rounded-none transition-all"
+                          disabled={managing}
+                        >
+                          TERMINATE PHASE
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  
+                  {event.status === 'LIVE' && (
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-primary/20 text-primary/60 hover:bg-primary hover:text-white rounded-none font-black uppercase tracking-widest text-[9px] h-14 transition-all"
+                        onClick={handleEndEvent}
+                        disabled={managing}
+                      >
+                        TERMINATE SESSION
+                      </Button>
+                  )}
+                </div>
+              </Card>
+            )}
+
+            {/* Synchronization Log (Bid History) */}
+            <Card className="bg-card border-border rounded-none shadow-2xl flex flex-col max-h-[800px]">
+              <div className="p-8 border-b border-border bg-black/20 flex items-center justify-between">
+                <div>
+                   <h3 className="text-[10px] font-black text-white uppercase tracking-[0.4em]">Dynamic Sync Log</h3>
+                   <p className="text-primary text-[8px] font-black uppercase tracking-widest mt-1">Live Feed Active</p>
+                </div>
+                <div className="w-10 h-10 rounded-none bg-black border border-border flex items-center justify-center font-black text-sm">{currentBids.length}</div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                {currentBids.length === 0 ? (
+                  <div className="py-20 text-center">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] italic">No active data streams...</p>
+                  </div>
+                ) : (
+                  currentBids.map((bid, index) => (
+                    <div key={bid.id} className={`flex items-center justify-between p-5 bg-black/40 border-l-2 transition-all group ${index === 0 ? 'border-primary bg-white/5' : 'border-transparent'}`}>
+                        <div className="flex items-center gap-4">
+                           <div className={`w-8 h-8 flex items-center justify-center font-black text-[10px] rounded-none border ${index === 0 ? 'bg-primary border-primary text-white' : 'bg-black border-border text-muted-foreground'}`}>
+                              {currentBids.length - index}
+                           </div>
+                           <div>
+                              <p className="text-white font-black uppercase tracking-widest text-[9px] group-hover:text-primary transition-colors">{bid.user?.name || 'ANONYMOUS ENTITY'}</p>
+                              <p className="text-[8px] text-muted-foreground uppercase font-black tracking-widest mt-1">{formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true }).toUpperCase()}</p>
+                           </div>
+                        </div>
+                        <p className={`font-black tracking-tighter text-lg ${index === 0 ? 'text-primary' : 'text-white'}`}>{formatCurrency(bid.amount)}</p>
                     </div>
                   ))
                 )}
-              </div>
-            </Card>
-
-            {/* Lot Collection / Sidebar List */}
-            <Card className="bg-slate-800 border-slate-700 p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
-                Collection Lots
-              </h3>
-              <div className="space-y-3">
-                {eventProducts.map((ep, index) => (
-                  <div key={ep.id} className={`flex items-center justify-between p-3 rounded-lg border transition ${
-                    currentEventProduct === ep.id ? 'bg-amber-500/10 border-amber-500' : 
-                    ep.product.status === 'SOLD' ? 'bg-green-500/5 border-green-500/30 opacity-60' :
-                    ep.product.status === 'AUCTIONED' ? 'bg-slate-800 border-slate-700 opacity-60' :
-                    'bg-slate-900/50 border-slate-800'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-slate-500">{index + 1}</span>
-                      <span className={`text-sm ${currentEventProduct === ep.id ? 'text-amber-500 font-bold' : 'text-white'}`}>
-                        {ep.product.title}
-                      </span>
-                    </div>
-                    <Badge className={`${
-                      currentEventProduct === ep.id ? 'bg-amber-500 text-black animate-pulse' : 
-                      ep.product.status === 'SOLD' ? 'bg-green-600' :
-                      ep.product.status === 'AUCTIONED' ? 'bg-gray-600' :
-                      'bg-slate-700 text-slate-300'
-                    } text-[10px] h-5`}>
-                      {currentEventProduct === ep.id ? 'LIVE' : ep.product.status === 'SOLD' ? 'SOLD' : ep.product.status === 'AUCTIONED' ? 'ENDED' : 'UPCOMING'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Stats */}
-            <Card className="bg-slate-800 border-slate-700 p-6">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-sm">Total Bids</span>
-                  <span className="text-white font-bold">{currentBids.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-sm">Bidders</span>
-                  <span className="text-white font-bold">{new Set(currentBids.map((b) => b.userId)).size}</span>
-                </div>
               </div>
             </Card>
           </div>
         </div>
       </main>
 
-      {/* Winner Overlay */}
+      {/* Terminal Overlay (Winner) */}
       {winnerData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-800 border-2 border-amber-500 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center animate-scaleIn">
-            <Zap className="w-16 h-16 text-amber-500 mx-auto mb-4 animate-bounce" />
-            <h2 className="text-3xl font-bold text-white mb-2">
-               {winnerData.userId === user?.id ? "Congratulations!" : "Item Sold!"}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-fadeIn p-4">
+          <div className="bg-card border-4 border-primary p-12 rounded-none shadow-[0_0_100px_rgba(255,0,0,0.2)] max-w-lg w-full text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-primary animate-pulse"></div>
+            <Zap className="w-20 h-20 text-primary mx-auto mb-8 animate-bounce" />
+            <h2 className="text-5xl font-black text-white mb-4 uppercase tracking-tighter">
+               {winnerData.id === user?.id ? "ACQUIRED" : "PHASE ENDED"}
             </h2>
-            <div className="bg-slate-900/50 rounded-xl p-6 mb-6">
-              <p className="text-slate-400 text-sm mb-1">Highest Bidder</p>
-              <p className="text-2xl font-bold text-white mb-4">{winnerData.name}</p>
-              <p className="text-slate-400 text-sm mb-1">Final Price</p>
-              <p className="text-3xl font-black text-amber-500">{formatCurrency(winnerData.amount)}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mb-10">Official Synchronization Result</p>
+            
+            <div className="bg-black border border-border p-8 mb-10 text-left space-y-6">
+               <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                  <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">AUTHORITY</span>
+                  <span className="text-white font-black uppercase tracking-tighter text-lg">{winnerData.name}</span>
+               </div>
+               <div className="flex justify-between items-center">
+                  <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">FINAL VALUATION</span>
+                  <span className="text-4xl font-black text-primary tracking-tighter">{formatCurrency(winnerData.amount)}</span>
+               </div>
             </div>
-            {winnerData.userId === user?.id && (
-               <p className="text-green-500 font-bold mb-6 animate-pulse">You WON this property!</p>
+
+            {winnerData.id === user?.id && (
+               <div className="mb-10 p-4 bg-primary/20 border border-primary animate-pulse">
+                  <p className="text-primary font-black uppercase tracking-[0.2em] text-xs">// SUCCESS: ASSET CONTROL TRANSFERRED</p>
+               </div>
             )}
+            
             <Button 
               onClick={() => setWinnerData(null)}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold h-12"
+              className="w-full bg-primary hover:bg-white hover:text-black text-white font-black uppercase tracking-widest text-xs h-16 rounded-none transition-all"
             >
-              Continue
+              ACKNOWLEDGE & PROCEED
             </Button>
           </div>
         </div>
