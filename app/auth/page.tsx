@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 
-export default function AuthRedirectPage() {
+function AuthRedirectContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { isAuthenticated, loading, user } = useAuth()
@@ -33,4 +33,12 @@ export default function AuthRedirectPage() {
   }, [isAuthenticated, loading, router, searchParams, user?.userType])
 
   return null
+}
+
+export default function AuthRedirectPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthRedirectContent />
+    </Suspense>
+  )
 }

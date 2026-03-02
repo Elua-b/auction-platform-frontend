@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { productAPI, auctionAPI, analyticsAPI, eventAPI, orderAPI } from '@/lib/api'
@@ -55,7 +55,7 @@ import {
   Cell 
 } from 'recharts'
 
-export default function SellerDashboard() {
+function SellerDashboardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const defaultTab = searchParams.get('tab') || 'stats'
@@ -204,7 +204,7 @@ export default function SellerDashboard() {
       </div>
 
 
-      {/* Tabs - Continued below */}
+      {/* Tabs */}
       <Tabs defaultValue={defaultTab} key={defaultTab} className="space-y-12">
         <TabsList className="bg-transparent border-b border-slate-100 p-0 h-auto rounded-none flex gap-8 mb-12">
           <TabsTrigger value="stats" className="bg-transparent px-0 py-3 text-[11px] font-black uppercase tracking-widest transition-all data-[state=active]:border-b-2 data-[state=active]:border-[#e35b5a] data-[state=active]:text-[#e35b5a] rounded-none shadow-none text-slate-400">Dashboard</TabsTrigger>
@@ -214,7 +214,6 @@ export default function SellerDashboard() {
         </TabsList>
 
         <TabsContent value="stats" className="space-y-12 animate-in fade-in duration-500">
-          {/* Dashboard Analytics Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="bg-white border-none rounded-sm p-8 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-slate-50" />
@@ -339,295 +338,303 @@ export default function SellerDashboard() {
           </div>
         </TabsContent>
 
-          <TabsContent value="products" className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-black text-slate-800 tracking-tighter">Asset Registry</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Manage your products outside active events</p>
-              </div>
-              <Link href="/seller/products/create">
-                <Button className="bg-[#e35b5a] hover:bg-slate-800 text-white font-black uppercase tracking-widest text-[9px] rounded-none h-11 px-8 transition-all">Add Product</Button>
-              </Link>
+        <TabsContent value="products" className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-black text-slate-800 tracking-tighter">Asset Registry</h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Manage your products outside active events</p>
             </div>
-            {loading ? (
-              <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest py-12 text-center">Synchronizing products...</p>
-            ) : products.length === 0 ? (
-              <Card className="bg-white border-none p-16 text-center rounded-sm shadow-md border-dashed border-2 border-slate-200">
-                <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-800 font-bold uppercase tracking-widest text-sm mb-4">No products yet</p>
-                <Link href="/seller/products/create" className="inline-block">
-                  <Button className="bg-[#e35b5a] hover:bg-slate-800 text-white font-black uppercase tracking-widest text-[10px] rounded-sm h-11 px-8">
-                    Create Product
-                  </Button>
-                </Link>
-              </Card>
-            ) : (
-              <Card className="bg-white border-none overflow-hidden rounded-sm shadow-md">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      <tr>
-                        <th className="px-8 py-5">Asset Identity</th>
-                        <th className="px-8 py-5">Category</th>
-                        <th className="px-8 py-5">Status</th>
-                        <th className="px-8 py-5">Registered</th>
-                        <th className="px-8 py-5">Valuation</th>
-                        <th className="px-8 py-5 text-center">Protocol</th>
+            <Link href="/seller/products/create">
+              <Button className="bg-[#e35b5a] hover:bg-slate-800 text-white font-black uppercase tracking-widest text-[9px] rounded-none h-11 px-8 transition-all">Add Product</Button>
+            </Link>
+          </div>
+          {loading ? (
+            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest py-12 text-center">Synchronizing products...</p>
+          ) : products.length === 0 ? (
+            <Card className="bg-white border-none p-16 text-center rounded-sm shadow-md border-dashed border-2 border-slate-200">
+              <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-800 font-bold uppercase tracking-widest text-sm mb-4">No products yet</p>
+              <Link href="/seller/products/create" className="inline-block">
+                <Button className="bg-[#e35b5a] hover:bg-slate-800 text-white font-black uppercase tracking-widest text-[10px] rounded-sm h-11 px-8">
+                  Create Product
+                </Button>
+              </Link>
+            </Card>
+          ) : (
+            <Card className="bg-white border-none overflow-hidden rounded-sm shadow-md">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                    <tr>
+                      <th className="px-8 py-5">Asset Identity</th>
+                      <th className="px-8 py-5">Category</th>
+                      <th className="px-8 py-5">Status</th>
+                      <th className="px-8 py-5">Registered</th>
+                      <th className="px-8 py-5">Valuation</th>
+                      <th className="px-8 py-5 text-center">Protocol</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {products.map((product) => (
+                      <tr key={product.id} className="hover:bg-slate-50/50 transition duration-200 group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-black rounded-none overflow-hidden flex-shrink-0 border border-slate-100 shadow-sm">
+                              {product.image && <img src={product.image} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" alt={product.title} />}
+                            </div>
+                            <p className="font-bold text-slate-800 uppercase tracking-tight text-[11px] group-hover:text-[#e35b5a] transition-colors">{product.title}</p>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Inventory Asset</p>
+                        </td>
+                        <td className="px-8 py-6">
+                          <span className={`px-3 py-1 font-black text-[8px] uppercase tracking-wider rounded-sm ${
+                            product.status === 'AVAILABLE' 
+                              ? 'bg-green-100 text-green-600' 
+                              : product.status === 'SOLD' 
+                                ? 'bg-slate-100 text-slate-400' 
+                                : 'bg-primary/10 text-primary'
+                          }`}>
+                            {product.status === 'AVAILABLE' ? 'Active' : product.status}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6">
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{new Date(product.createdAt).toLocaleDateString()}</p>
+                        </td>
+                        <td className="px-8 py-6">
+                          <p className="text-lg font-black text-slate-800 tracking-tighter">{formatCurrency(product.startingPrice)}</p>
+                        </td>
+                        <td className="px-8 py-6 text-center">
+                          <Link href={`/seller/products/${product.id}`}>
+                            <Button size="sm" variant="ghost" className="text-slate-400 hover:text-[#e35b5a] hover:bg-[#e35b5a]/5 rounded-none text-[9px] font-black uppercase tracking-widest h-8 px-4">
+                              Manage
+                            </Button>
+                          </Link>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {products.map((product) => (
-                        <tr key={product.id} className="hover:bg-slate-50/50 transition duration-200 group">
-                          <td className="px-8 py-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-black rounded-none overflow-hidden flex-shrink-0 border border-slate-100 shadow-sm">
-                                {product.image && <img src={product.image} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" alt={product.title} />}
-                              </div>
-                              <p className="font-bold text-slate-800 uppercase tracking-tight text-[11px] group-hover:text-[#e35b5a] transition-colors">{product.title}</p>
-                            </div>
-                          </td>
-                          <td className="px-8 py-6">
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Inventory Asset</p>
-                          </td>
-                          <td className="px-8 py-6">
-                            <span className={`px-3 py-1 font-black text-[8px] uppercase tracking-wider rounded-sm ${
-                              product.status === 'AVAILABLE' 
-                                ? 'bg-green-100 text-green-600' 
-                                : product.status === 'SOLD' 
-                                  ? 'bg-slate-100 text-slate-400' 
-                                  : 'bg-primary/10 text-primary'
-                            }`}>
-                              {product.status === 'AVAILABLE' ? 'Active' : product.status}
-                            </span>
-                          </td>
-                          <td className="px-8 py-6">
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{new Date(product.createdAt).toLocaleDateString()}</p>
-                          </td>
-                          <td className="px-8 py-6">
-                            <p className="text-lg font-black text-slate-800 tracking-tighter">{formatCurrency(product.startingPrice)}</p>
-                          </td>
-                          <td className="px-8 py-6 text-center">
-                            <Link href={`/seller/products/${product.id}`}>
-                              <Button size="sm" variant="ghost" className="text-slate-400 hover:text-[#e35b5a] hover:bg-[#e35b5a]/5 rounded-none text-[9px] font-black uppercase tracking-widest h-8 px-4">
-                                Manage
-                              </Button>
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* Live Events Tab (Unified Control & List) */}
-          <TabsContent value="events" className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-black text-slate-800 tracking-tighter">Event Protocol</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Orchestrate live auctions and manage high-value events</p>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <Link href="/seller/events/create">
-                <Button className="bg-[#e35b5a] hover:bg-slate-800 text-white font-black uppercase tracking-widest text-[9px] rounded-none h-11 px-8 transition-all shadow-md">Add Event</Button>
-              </Link>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="events" className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-xl font-black text-slate-800 tracking-tighter">Event Protocol</h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Orchestrate live auctions and manage high-value events</p>
             </div>
+            <Link href="/seller/events/create">
+              <Button className="bg-[#e35b5a] hover:bg-slate-800 text-white font-black uppercase tracking-widest text-[9px] rounded-none h-11 px-8 transition-all shadow-md">Add Event</Button>
+            </Link>
+          </div>
 
-            {/* Active Live Auctions Overlay */}
-            <section className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-1 h-4 bg-[#e35b5a] rounded-full"></div>
-                  <h4 className="text-[9px] font-black text-slate-800 uppercase tracking-[0.2em]">Operational Red Zone</h4>
+          <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-4 bg-[#e35b5a] rounded-full"></div>
+                <h4 className="text-[9px] font-black text-slate-800 uppercase tracking-[0.2em]">Operational Red Zone</h4>
+              </div>
+              {activeAuctions.length === 0 ? (
+                <Card className="bg-white border-none p-12 text-center rounded-sm shadow-sm border-dashed border-2 border-slate-50">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No assets currently in active liquidation</p>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {activeAuctions.map((auction) => {
+                    const product = products.find((p) => p.id === auction.productId)
+                    return (
+                      <Card key={auction.id} className="bg-white border-none overflow-hidden rounded-sm shadow-md p-6 group">
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="w-12 h-12 bg-black rounded-none overflow-hidden flex-shrink-0">
+                            {product?.image && <img src={product.image} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" alt={product.title} />}
+                          </div>
+                          <span className="px-3 py-1 font-black text-[8px] uppercase tracking-wider bg-[#e35b5a] text-white animate-pulse rounded-sm">LIVE</span>
+                        </div>
+                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-tighter mb-1 line-clamp-1 group-hover:text-[#e35b5a] transition-colors">{product?.title}</h3>
+                        <div className="flex justify-between items-end mt-4">
+                          <div>
+                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Clearing Target</p>
+                             <p className="text-xl font-black text-slate-800 tracking-tighter leading-none">{formatCurrency(product?.startingPrice || 0)}</p>
+                          </div>
+                          <Link href={`/seller/auctions/${auction.id}`}>
+                            <Button size="sm" className="bg-slate-800 hover:bg-[#e35b5a] text-white rounded-none text-[9px] font-black uppercase tracking-widest h-8 px-5 transition-all">Control Room</Button>
+                          </Link>
+                        </div>
+                      </Card>
+                    )
+                  })}
                 </div>
-                {activeAuctions.length === 0 ? (
-                  <Card className="bg-white border-none p-12 text-center rounded-sm shadow-sm border-dashed border-2 border-slate-50">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">No assets currently in active liquidation</p>
-                  </Card>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {activeAuctions.map((auction) => {
-                      const product = products.find((p) => p.id === auction.productId)
-                      return (
-                        <Card key={auction.id} className="bg-white border-none overflow-hidden rounded-sm shadow-md p-6 group">
-                          <div className="flex justify-between items-start mb-6">
-                            <div className="w-12 h-12 bg-black rounded-none overflow-hidden flex-shrink-0">
-                              {product?.image && <img src={product.image} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" alt={product.title} />}
-                            </div>
-                            <span className="px-3 py-1 font-black text-[8px] uppercase tracking-wider bg-[#e35b5a] text-white animate-pulse rounded-sm">LIVE</span>
-                          </div>
-                          <h3 className="text-sm font-black text-slate-800 uppercase tracking-tighter mb-1 line-clamp-1 group-hover:text-[#e35b5a] transition-colors">{product?.title}</h3>
-                          <div className="flex justify-between items-end mt-4">
-                            <div>
-                               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Clearing Target</p>
-                               <p className="text-xl font-black text-slate-800 tracking-tighter leading-none">{formatCurrency(product?.startingPrice || 0)}</p>
-                            </div>
-                            <Link href={`/seller/auctions/${auction.id}`}>
-                              <Button size="sm" className="bg-slate-800 hover:bg-[#e35b5a] text-white rounded-none text-[9px] font-black uppercase tracking-widest h-8 px-5 transition-all">Control Room</Button>
-                            </Link>
-                          </div>
-                        </Card>
-                      )
-                    })}
-                  </div>
-                )}
-            </section>
+              )}
+          </section>
 
-            {/* General Event List */}
-            <section className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-1 h-4 bg-slate-200 rounded-full"></div>
-                  <h4 className="text-[9px] font-black text-slate-800 uppercase tracking-[0.2em]">Registry Protocols</h4>
-                </div>
-                {events.length === 0 ? (
-                  <Card className="bg-white border-none p-16 text-center rounded-sm shadow-sm border-dashed border-2 border-slate-100">
-                    <Calendar className="w-16 h-16 text-slate-200 mx-auto mb-6" />
-                    <p className="text-slate-800 font-black uppercase tracking-widest text-sm mb-6">No events registered yet</p>
-                    <Link href="/seller/events/create">
-                      <Button className="bg-[#e35b5a] hover:bg-[#e35b5a]/95 text-white font-black uppercase tracking-widest text-[10px] rounded-sm h-12 px-10 shadow-lg shadow-[#e35b5a]/20 transition-all">Host Your First Event</Button>
-                    </Link>
-                  </Card>
-                ) : (
-                  <Card className="bg-white border-none overflow-hidden rounded-sm shadow-md">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left">
-                        <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                          <tr>
-                            <th className="px-8 py-5">Event Protocol</th>
-                            <th className="px-8 py-5">Registry Date & Time</th>
-                            <th className="px-8 py-5">Status</th>
-                            <th className="px-8 py-5 text-center">Operations</th>
+          <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-4 bg-slate-200 rounded-full"></div>
+                <h4 className="text-[9px] font-black text-slate-800 uppercase tracking-[0.2em]">Registry Protocols</h4>
+              </div>
+              {events.length === 0 ? (
+                <Card className="bg-white border-none p-16 text-center rounded-sm shadow-sm border-dashed border-2 border-slate-100">
+                  <Calendar className="w-16 h-16 text-slate-200 mx-auto mb-6" />
+                  <p className="text-slate-800 font-black uppercase tracking-widest text-sm mb-6">No events registered yet</p>
+                  <Link href="/seller/events/create">
+                    <Button className="bg-[#e35b5a] hover:bg-[#e35b5a]/95 text-white font-black uppercase tracking-widest text-[10px] rounded-sm h-12 px-10 shadow-lg shadow-[#e35b5a]/20 transition-all">Host Your First Event</Button>
+                  </Link>
+                </Card>
+              ) : (
+                <Card className="bg-white border-none overflow-hidden rounded-sm shadow-md">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        <tr>
+                          <th className="px-8 py-5">Event Protocol</th>
+                          <th className="px-8 py-5">Registry Date & Time</th>
+                          <th className="px-8 py-5">Status</th>
+                          <th className="px-8 py-5 text-center">Operations</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {events.map((event) => (
+                          <tr key={event.id} className="hover:bg-slate-50/50 transition duration-200 group">
+                            <td className="px-8 py-6">
+                              <div className="flex items-center gap-4">
+                                <p className="font-bold text-slate-800 uppercase tracking-tight text-[11px] group-hover:text-[#e35b5a] transition-colors">{event.title}</p>
+                                {event.status === 'LIVE' && (
+                                  <span className="bg-[#e35b5a] text-white text-[8px] font-black px-3 py-1 uppercase tracking-widest animate-pulse rounded-sm">🔴 LIVE</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-8 py-6">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                {new Date(event.date).toLocaleDateString()} at {event.startTime}
+                              </p>
+                            </td>
+                            <td className="px-8 py-6">
+                              <span className={`px-3 py-1 font-black text-[8px] uppercase tracking-wider rounded-sm ${event.status === 'LIVE' ? 'bg-[#e35b5a] text-white' : event.status === 'UPCOMING' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                {event.status}
+                              </span>
+                            </td>
+                            <td className="px-8 py-6">
+                              <div className="flex gap-4 justify-center">
+                                <Link href={`/seller/events/${event.id}/manage`}>
+                                  <Button variant="outline" size="sm" className="border-slate-200 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-800 rounded-sm text-[9px] font-black uppercase tracking-widest h-9 px-6 transition-all bg-white">Inventory</Button>
+                                </Link>
+                                <Link href={`/events/${event.id}`}>
+                                  <Button size="sm" className="bg-slate-800 hover:bg-[#e35b5a] text-white font-black uppercase tracking-widest text-[9px] rounded-sm h-9 px-6 transition-all">Enter Room</Button>
+                                </Link>
+                                {event.status === 'LIVE' && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    onClick={() => handleEndEvent(event.id)}
+                                    className="border-primary/20 text-primary hover:bg-primary/5 rounded-sm font-black uppercase tracking-widest text-[9px] h-9 px-6 transition-all bg-white"
+                                  >
+                                    Terminate
+                                  </Button>
+                                )}
+                                {(event.status === 'UPCOMING' || event.status === 'SCHEDULED') && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    onClick={() => handleDeleteClick('event', event.id, event.title)}
+                                    className="border-slate-200 text-slate-400 hover:bg-red-50 hover:text-[#e35b5a] hover:border-red-100 rounded-sm transition-all h-9 bg-white"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {events.map((event) => (
-                            <tr key={event.id} className="hover:bg-slate-50/50 transition duration-200 group">
-                              <td className="px-8 py-6">
-                                <div className="flex items-center gap-4">
-                                  <p className="font-bold text-slate-800 uppercase tracking-tight text-[11px] group-hover:text-[#e35b5a] transition-colors">{event.title}</p>
-                                  {event.status === 'LIVE' && (
-                                    <span className="bg-[#e35b5a] text-white text-[8px] font-black px-3 py-1 uppercase tracking-widest animate-pulse rounded-sm">🔴 LIVE</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-8 py-6">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                  {new Date(event.date).toLocaleDateString()} at {event.startTime}
-                                </p>
-                              </td>
-                              <td className="px-8 py-6">
-                                <span className={`px-3 py-1 font-black text-[8px] uppercase tracking-wider rounded-sm ${event.status === 'LIVE' ? 'bg-[#e35b5a] text-white' : event.status === 'UPCOMING' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                                  {event.status}
-                                </span>
-                              </td>
-                              <td className="px-8 py-6">
-                                <div className="flex gap-4 justify-center">
-                                  <Link href={`/seller/events/${event.id}/manage`}>
-                                    <Button variant="outline" size="sm" className="border-slate-200 text-slate-400 hover:bg-slate-800 hover:text-white hover:border-slate-800 rounded-sm text-[9px] font-black uppercase tracking-widest h-9 px-6 transition-all bg-white">Inventory</Button>
-                                  </Link>
-                                  <Link href={`/events/${event.id}`}>
-                                    <Button size="sm" className="bg-slate-800 hover:bg-[#e35b5a] text-white font-black uppercase tracking-widest text-[9px] rounded-sm h-9 px-6 transition-all">Enter Room</Button>
-                                  </Link>
-                                  {event.status === 'LIVE' && (
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline" 
-                                      onClick={() => handleEndEvent(event.id)}
-                                      className="border-primary/20 text-primary hover:bg-primary/5 rounded-sm font-black uppercase tracking-widest text-[9px] h-9 px-6 transition-all bg-white"
-                                    >
-                                      Terminate
-                                    </Button>
-                                  )}
-                                  {(event.status === 'UPCOMING' || event.status === 'SCHEDULED') && (
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline" 
-                                      onClick={() => handleDeleteClick('event', event.id, event.title)}
-                                      className="border-slate-200 text-slate-400 hover:bg-red-50 hover:text-[#e35b5a] hover:border-red-100 rounded-sm transition-all h-9 bg-white"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </Card>
-                )}
-            </section>
-          </TabsContent>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              )}
+          </section>
+        </TabsContent>
 
-          {/* Sales Registry Tab */}
-          <TabsContent value="sales">
-            {sales.length === 0 ? (
-              <Card className="bg-white border-none p-20 text-center rounded-sm shadow-sm border-dashed border-2 border-slate-100">
-                <TrendingUp className="w-16 h-16 text-slate-200 mx-auto mb-6" />
-                <p className="text-slate-800 font-black uppercase tracking-widest text-sm mb-4">No sales recorded in registry</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Awaiting high-value asset liquidations</p>
-              </Card>
-            ) : (
-              <Card className="bg-white border-none overflow-hidden rounded-sm shadow-sm relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-slate-50" />
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50 border-b border-slate-50">
-                      <tr>
-                        <th className="px-8 py-5">Asset Identity</th>
-                        <th className="px-8 py-5">Buyer Identity</th>
-                        <th className="px-8 py-5">Clearing Valuation</th>
-                        <th className="px-8 py-5">Registry Date</th>
-                        <th className="px-8 py-5 text-center">Status</th>
+        <TabsContent value="sales">
+          {sales.length === 0 ? (
+            <Card className="bg-white border-none p-20 text-center rounded-sm shadow-sm border-dashed border-2 border-slate-100">
+              <TrendingUp className="w-16 h-16 text-slate-200 mx-auto mb-6" />
+              <p className="text-slate-800 font-black uppercase tracking-widest text-sm mb-4">No sales recorded in registry</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Awaiting high-value asset liquidations</p>
+            </Card>
+          ) : (
+            <Card className="bg-white border-none overflow-hidden rounded-sm shadow-sm relative">
+              <div className="absolute top-0 left-0 w-full h-1 bg-slate-50" />
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50 border-b border-slate-50">
+                    <tr>
+                      <th className="px-8 py-5">Asset Identity</th>
+                      <th className="px-8 py-5">Buyer Identity</th>
+                      <th className="px-8 py-5">Clearing Valuation</th>
+                      <th className="px-8 py-5">Registry Date</th>
+                      <th className="px-8 py-5 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {sales.map((order) => (
+                      <tr key={order.id} className="hover:bg-slate-50/50 transition duration-200 group">
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-slate-100 rounded-none overflow-hidden flex-shrink-0 border border-slate-100">
+                              {order.product.image && <img src={order.product.image} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" alt={order.product.title} />}
+                            </div>
+                            <p className="font-bold text-slate-800 uppercase tracking-tight text-[11px] group-hover:text-[#e35b5a] transition-colors">{order.product.title}</p>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div>
+                            <p className="text-[11px] font-black text-slate-800 uppercase tracking-tight leading-none mb-1">{order.user.name}</p>
+                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{order.user.email}</p>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <p className="text-2xl font-black text-slate-800 tracking-tighter leading-none">{formatCurrency(order.amount)}</p>
+                        </td>
+                        <td className="px-8 py-6">
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        </td>
+                        <td className="px-8 py-6 text-center">
+                          <span className={`px-2.5 py-1 font-black text-[8px] uppercase tracking-wider rounded-sm ${order.paymentStatus === 'PAID' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-800 text-white'}`}>
+                            {order.paymentStatus}
+                          </span>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {sales.map((order) => (
-                        <tr key={order.id} className="hover:bg-slate-50/50 transition duration-200 group">
-                          <td className="px-8 py-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-slate-100 rounded-none overflow-hidden flex-shrink-0 border border-slate-100">
-                                {order.product.image && <img src={order.product.image} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" alt={order.product.title} />}
-                              </div>
-                              <p className="font-bold text-slate-800 uppercase tracking-tight text-[11px] group-hover:text-[#e35b5a] transition-colors">{order.product.title}</p>
-                            </div>
-                          </td>
-                          <td className="px-8 py-6">
-                            <div>
-                              <p className="text-[11px] font-black text-slate-800 uppercase tracking-tight leading-none mb-1">{order.user.name}</p>
-                              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{order.user.email}</p>
-                            </div>
-                          </td>
-                          <td className="px-8 py-6">
-                            <p className="text-2xl font-black text-slate-800 tracking-tighter leading-none">{formatCurrency(order.amount)}</p>
-                          </td>
-                          <td className="px-8 py-6">
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{new Date(order.createdAt).toLocaleDateString()}</p>
-                          </td>
-                          <td className="px-8 py-6 text-center">
-                            <span className={`px-2.5 py-1 font-black text-[8px] uppercase tracking-wider rounded-sm ${order.paymentStatus === 'PAID' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-800 text-white'}`}>
-                              {order.paymentStatus}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
 
-        <ConfirmDialog
-          isOpen={deleteDialog.isOpen}
-          onClose={() => setDeleteDialog({ isOpen: false, type: null, id: null, name: '' })}
-          onConfirm={handleDeleteConfirm}
-          title={`Delete ${deleteDialog.type === 'auction' ? 'Auction' : 'Event'}`}
-          message={`Confirm deletion of "${deleteDialog.name}"? This action is permanent and irreversible.`}
-          confirmText="Delete"
-        />
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => setDeleteDialog({ isOpen: false, type: null, id: null, name: '' })}
+        onConfirm={handleDeleteConfirm}
+        title={`Delete ${deleteDialog.type === 'auction' ? 'Auction' : 'Event'}`}
+        message={`Confirm deletion of "${deleteDialog.name}"? This action is permanent and irreversible.`}
+        confirmText="Delete"
+      />
+    </div>
+  )
+}
+
+export default function SellerDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    )
+    }>
+      <SellerDashboardContent />
+    </Suspense>
+  )
 }

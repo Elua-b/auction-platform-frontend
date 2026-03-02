@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
@@ -69,7 +69,7 @@ import {
   Cell 
 } from 'recharts'
 
-export default function BuyerDashboard() {
+function BuyerDashboardContent() {
   const router = useRouter()
   const { user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
@@ -369,7 +369,7 @@ export default function BuyerDashboard() {
                         <img 
                           src={product.image} 
                           alt={product.title} 
-                          className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500" 
+                          className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500" 
                         />
                       )}
                     </div>
@@ -506,4 +506,16 @@ export default function BuyerDashboard() {
         </Tabs>
   </div>
 )
+}
+
+export default function BuyerDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <BuyerDashboardContent />
+    </Suspense>
+  )
 }
