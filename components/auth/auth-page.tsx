@@ -233,7 +233,7 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
           {/* Footer */}
           <div className="mt-12 text-center">
              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">
-               © 2026 AuctionHub Protocol. All Rights Reserved.
+               © 2026 CUNGURA Protocol. All Rights Reserved.
              </p>
           </div>
         </div>

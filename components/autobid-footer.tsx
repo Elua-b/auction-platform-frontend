@@ -11,7 +11,7 @@ export function AutoBidFooter() {
           {/* Logo & Support */}
           <div>
             <div className="flex flex-col mb-10 group cursor-pointer">
-              <span className="text-4xl font-black text-white leading-tight uppercase tracking-tighter">AuctionHUB</span>
+              <span className="text-4xl font-black text-white leading-tight uppercase tracking-tighter">CUNGURA</span>
             </div>
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Customer support</h4>

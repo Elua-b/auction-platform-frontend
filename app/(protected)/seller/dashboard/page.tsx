@@ -174,7 +174,7 @@ function SellerDashboardContent() {
           <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-800 leading-none">Dashboard Overview</h1>
         </div>
         <div className="flex gap-2 text-[10px] items-center bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
-            <span className="text-slate-400 uppercase font-bold tracking-widest">AuctionHub</span>
+            <span className="text-slate-400 uppercase font-bold tracking-widest">CUNGURA</span>
             <span className="text-slate-200">/</span>
             <span className="text-[#e35b5a] font-black uppercase tracking-widest">Dashboard</span>
         </div>
@@ -330,7 +330,7 @@ function SellerDashboardContent() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                   <p className="text-sm font-black text-slate-800 tracking-widest leading-none mb-1">AuctionHub</p>
+                   <p className="text-sm font-black text-slate-800 tracking-widest leading-none mb-1">CUNGURA</p>
                    <p className="text-3xl font-black text-slate-800 tracking-tighter">42%</p>
                 </div>
               </div>

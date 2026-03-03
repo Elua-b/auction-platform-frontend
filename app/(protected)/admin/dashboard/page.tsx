@@ -118,7 +118,7 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-800 leading-none">Admin Control</h1>
           </div>
           <div className="flex gap-2 text-[10px] items-center bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
-              <span className="text-slate-400 uppercase font-bold tracking-widest">AuctionHub</span>
+              <span className="text-slate-400 uppercase font-bold tracking-widest">CUNGURA</span>
               <span className="text-slate-200">/</span>
               <span className="text-[#e35b5a] font-black uppercase tracking-widest">Global Control</span>
           </div>

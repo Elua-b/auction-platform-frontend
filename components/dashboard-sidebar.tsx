@@ -55,7 +55,7 @@ export default function DashboardSidebar({ user, onLogout }: SidebarProps) {
       {/* Brand Header */}
       <div className="p-8 pb-10 flex justify-center">
         <Link href="/" className="flex flex-col items-center group">
-          <span className="text-3xl font-black text-slate-800 leading-tight uppercase tracking-tighter transition-colors italic">AuctionHub</span>
+          <span className="text-3xl font-black text-slate-800 leading-tight uppercase tracking-tighter transition-colors italic">CUNGURA</span>
           <div className="h-1 w-8 bg-slate-100 mt-1 group-hover:bg-[#e35b5a] transition-all" />
         </Link>
       </div>

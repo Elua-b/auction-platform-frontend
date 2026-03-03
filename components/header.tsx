@@ -23,7 +23,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="flex flex-col">
-              <span className="text-2xl font-black text-slate-800 leading-none uppercase tracking-tighter group-hover:text-primary transition-colors italic">AuctionHub</span>
+              <span className="text-2xl font-black text-slate-800 leading-none uppercase tracking-tighter group-hover:text-primary transition-colors italic">CUNGURA</span>
               <div className="h-0.5 w-8 bg-primary mt-1 opacity-50 group-hover:w-full transition-all" />
             </div>
           </Link>

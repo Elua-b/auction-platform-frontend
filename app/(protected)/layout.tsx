@@ -48,7 +48,7 @@ export default function ProtectedLayout({
         <header className="lg:hidden h-20 bg-white border-b border-slate-100 px-6 flex items-center justify-between sticky top-0 z-50 shadow-sm">
            <Link href="/" className="flex flex-col">
               <span className="text-2xl font-black text-slate-800 leading-tight uppercase tracking-tighter">AutoBid</span>
-              <span className="text-[8px] uppercase tracking-[0.4em] text-[#e35b5a] font-black">AuctionHub</span>
+              <span className="text-[8px] uppercase tracking-[0.4em] text-[#e35b5a] font-black">cungura</span>
            </Link>
            <Button 
             variant="ghost" 
