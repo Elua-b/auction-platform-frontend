@@ -63,7 +63,7 @@ lib/
 ### Prerequisites
 - Node.js 18+
 - npm or yarn
-- Backend API running on `http://localhost:5000`
+- Backend API running on `https://auction-platform-backend-uvjo.onrender.com`
 
 ### Installation
 ```bash
@@ -115,7 +115,7 @@ Login as Admin → View Analytics → Manage Users → Manage Categories → Mon
 
 ## 📊 API Integration
 
-All endpoints connect to `http://localhost:5000`:
+All endpoints connect to `https://auction-platform-backend-uvjo.onrender.com`:
 
 ### Core Endpoints Used
 ```
@@ -189,7 +189,7 @@ See `API_IMPROVEMENTS.md` for:
 ### API Base URL
 Change in `lib/api.ts`:
 ```typescript
-const API_BASE = 'http://localhost:5000'
+const API_BASE = 'https://auction-platform-backend-uvjo.onrender.com'
 ```
 
 ### Polling Interval

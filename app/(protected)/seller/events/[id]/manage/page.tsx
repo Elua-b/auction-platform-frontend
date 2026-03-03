@@ -82,6 +82,14 @@ export default function ManageEventPage() {
     try {
       setLoading(true)
       const eventData = await eventAPI.getById(eventId)
+      
+      // Ownership check
+      if (user && eventData.sellerId !== user.id && user.role !== 'ADMIN') {
+        setError('You do not have permission to manage this event')
+        setTimeout(() => router.push('/seller/dashboard'), 3000)
+        return
+      }
+      
       setEvent(eventData)
 
       if (user) {

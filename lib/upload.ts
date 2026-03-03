@@ -1,8 +1,8 @@
-const API_BASE = 'https://auction-platform-backend-uvjo.onrender.com'
+const API_BASE = "https://auction-platform-backend-uvjo.onrender.com";
 
 export interface UploadResponse {
-    url: string
-    publicId: string
+  url: string;
+  publicId: string;
 }
 
 /**
@@ -11,26 +11,29 @@ export interface UploadResponse {
  * @returns Promise with the Cloudinary URL and public ID
  */
 export async function uploadImage(file: File): Promise<UploadResponse> {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
 
-    const formData = new FormData()
-    formData.append('file', file)
+  const formData = new FormData();
+  formData.append("file", file);
 
-    const headers: Record<string, string> = {}
-    if (token) {
-        headers.Authorization = `Bearer ${token}`
-    }
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
-    const response = await fetch(`${API_BASE}/upload/image`, {
-        method: 'POST',
-        headers,
-        body: formData,
-    })
+  const response = await fetch(`${API_BASE}/upload/image`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Upload failed' }))
-        throw new Error(error.message || 'Failed to upload image')
-    }
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ message: "Upload failed" }));
+    throw new Error(error.message || "Failed to upload image");
+  }
 
-    return response.json()
+  return response.json();
 }

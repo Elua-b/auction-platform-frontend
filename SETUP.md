@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Node.js 18+ installed
-- Your backend API running on `http://localhost:5000`
+- Your backend API running on `https://auction-platform-backend-uvjo.onrender.com`
 - All API endpoints from the documentation working
 
 ## Installation
@@ -22,7 +22,7 @@ The application will be available at `http://localhost:3000`
 ### 3. Backend Setup
 Ensure your backend API is running:
 ```bash
-# Backend should be accessible at http://localhost:5000
+# Backend should be accessible at https://auction-platform-backend-uvjo.onrender.com
 # All endpoints documented in your API documentation should be active
 ```
 
@@ -251,7 +251,7 @@ The following features are implemented in the frontend but require backend API e
 ## Troubleshooting
 
 ### "API request failed" Error
-- Check that backend is running on `http://localhost:5000`
+- Check that backend is running on `https://auction-platform-backend-uvjo.onrender.com`
 - Verify all endpoints are properly configured
 - Check CORS settings on backend
 

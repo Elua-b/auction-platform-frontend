@@ -250,7 +250,7 @@ CREATE TABLE reviews (
 
 ### API Base URL
 ```
-http://localhost:5000
+https://auction-platform-backend-uvjo.onrender.com
 ```
 
 ### Authentication

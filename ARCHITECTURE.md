@@ -496,7 +496,7 @@ Global User Access
 ### Environment Configuration
 ```
 Development
-├── API: http://localhost:5000
+├── API: https://auction-platform-backend-uvjo.onrender.com
 ├── Frontend: http://localhost:3000
 └── Auth: localStorage
 

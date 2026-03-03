@@ -50,6 +50,14 @@ export default function SellerProductDetailPage() {
     try {
       setLoading(true)
       const data = await productAPI.getById(productId)
+      
+      // Ownership check
+      if (user && data.sellerId !== user.id && user.role !== 'ADMIN') {
+        setError('You do not have permission to manage this product')
+        setTimeout(() => router.push('/seller/dashboard'), 3000)
+        return
+      }
+
       setProduct(data)
     } catch (err: any) {
       setError(err.message || 'Failed to load product')

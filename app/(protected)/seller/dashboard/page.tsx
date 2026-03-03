@@ -84,9 +84,9 @@ function SellerDashboardContent() {
       setLoading(true)
       const [productsData, auctionsData, analyticsData, eventsData, salesData] = await Promise.all([
         productAPI.getAll({ sellerId: user?.id }),
-        auctionAPI.getAll(),
+        auctionAPI.getBySeller(user?.id!),
         analyticsAPI.getSeller(user?.id!),
-        eventAPI.getAll(),
+        eventAPI.getAll(user?.id),
         orderAPI.getSellerOrders()
       ])
       setProducts(productsData)
