@@ -32,9 +32,10 @@ export default function CreateEventPage() {
     setError(null)
 
     try {
+      const combinedDateTime = new Date(`${formData.date}T${formData.startTime}`)
       const event = await eventAPI.create({
         ...formData,
-        date: new Date(formData.date).toISOString(),
+        date: combinedDateTime.toISOString(),
       })
       router.push(`/seller/events/${event.id}/manage`)
     } catch (err: any) {

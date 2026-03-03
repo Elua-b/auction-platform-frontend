@@ -93,8 +93,8 @@ export default function CreateProductPage() {
       // Create auction for the product
       await auctionAPI.create({
         productId: productResponse.id,
-        startTime: auctionData.startTime,
-        endTime: auctionData.endTime,
+        startTime: new Date(auctionData.startTime).toISOString(),
+        endTime: new Date(auctionData.endTime).toISOString(),
       })
 
       setSuccess(true)

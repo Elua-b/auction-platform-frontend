@@ -195,7 +195,7 @@ export default function BrowsePage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                   {filteredAuctions.map(auction => (
-                    <Link key={auction.id} href={`/auction/${auction.productId}`} className="group h-full">
+                    <Link key={auction.id} href={`/products/${auction.productId}`} className="group h-full">
                       <Card className="h-full bg-white border-none overflow-hidden rounded-sm shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col relative">
                         <div className="relative h-52 bg-slate-50 overflow-hidden border-b border-slate-50">
                           {auction.product.image ? (

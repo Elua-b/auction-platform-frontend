@@ -75,7 +75,7 @@ export default function Header() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={logout} className="text-[10px] font-black uppercase tracking-widest p-3 flex items-center gap-3 text-primary cursor-pointer hover:bg-red-50 focus:bg-red-50 transition-all rounded-none">
                     <LogOut className="w-4 h-4" />
-                    Terminate Session
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

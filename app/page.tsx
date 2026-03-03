@@ -124,7 +124,7 @@ export default function LandingPage() {
             if (type === 'event') {
               requireAuthThenGo(`/events/${id}`)
             } else {
-              requireAuthThenGo(`/auction/${id}`)
+              requireAuthThenGo(`/products/${id}`)
             }
           }}
         />

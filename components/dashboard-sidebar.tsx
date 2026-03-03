@@ -138,7 +138,7 @@ export default function DashboardSidebar({ user, onLogout }: SidebarProps) {
           className="w-full justify-start text-slate-400 hover:text-[#e35b5a] hover:bg-[#e35b5a]/5 rounded-sm font-black uppercase tracking-widest text-[9px] gap-3 h-10 group transition-all"
         >
           <LogOut className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          Terminate session
+          Logout
         </Button>
       </div>
     </aside>

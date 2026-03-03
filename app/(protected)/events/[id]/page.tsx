@@ -465,7 +465,7 @@ export default function EventDetailPage() {
                                placeholder={`MIN: ${highestBid + 1}`}
                                value={bidAmount}
                                onChange={(e) => setBidAmount(e.target.value)}
-                               className="bg-white border-border rounded-none h-16 text-2xl font-black tracking-tighter px-6 transition-all focus:border-primary pr-20 text-black"
+                               className="bg-black border-border rounded-none h-16 text-2xl font-black tracking-tighter px-6 transition-all focus:border-primary pr-20 text-white"
                              />
                              <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">RWF</div>
                            </div>

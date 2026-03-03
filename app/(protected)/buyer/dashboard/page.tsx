@@ -95,7 +95,7 @@ function BuyerDashboardContent() {
     try {
       setLoading(true)
       const [productsData, categoriesData, auctionsData, ordersData, eventsData] = await Promise.all([
-        productAPI.getAll(),
+        productAPI.getAll({ standalone: true }),
         categoryAPI.getAll(),
         auctionAPI.getAll(),
         orderAPI.getMyOrders(),

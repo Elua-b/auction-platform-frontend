@@ -206,7 +206,7 @@ export function LiveEventsSection({
                       <div className="flex justify-between items-end">
                          <div className="space-y-1">
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Reserve Target</span>
-                            <p className="text-3xl font-black text-slate-800 tracking-tighter leading-none">${product.startingPrice.toLocaleString()}</p>
+                            <p className="text-3xl font-black text-slate-800 tracking-tighter leading-none">rwf{product.startingPrice.toLocaleString()}</p>
                          </div>
                          <Button className="bg-slate-900 group-hover:bg-primary text-white rounded-none font-black uppercase tracking-widest text-[9px] h-11 px-6 transition-all shadow-xl">
                             Initiate Acquisition

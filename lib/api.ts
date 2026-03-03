@@ -34,11 +34,13 @@ export const productAPI = {
     categoryId?: string;
     sellerId?: string;
     status?: string;
+    standalone?: boolean;
   }) => {
     const params = new URLSearchParams();
     if (filters?.categoryId) params.append("categoryId", filters.categoryId);
     if (filters?.sellerId) params.append("sellerId", filters.sellerId);
     if (filters?.status) params.append("status", filters.status);
+    if (filters?.standalone) params.append("standalone", "true");
     const queryString = params.toString();
     return apiCall(`/products${queryString ? `?${queryString}` : ""}`);
   },

@@ -95,7 +95,7 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
 
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Agent Identifier</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</label>
                     <Input
                       type="email"
                       placeholder="EMAIL@PROTOCOL.COM"
@@ -107,7 +107,7 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Key</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Password</label>
                     <Input
                       type="password"
                       placeholder="••••••••"
@@ -173,7 +173,7 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Agent Identifier</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</label>
                     <Input
                       type="email"
                       placeholder="EMAIL@PROTOCOL.COM"
@@ -185,7 +185,7 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Key</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Password</label>
                     <Input
                       type="password"
                       placeholder="••••••••"
