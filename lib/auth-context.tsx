@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch('http://localhost:5000/users/login', {
+      const response = await fetch('https://auction-platform-backend-uvjo.onrender.com/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch('http://localhost:5000/users', {
+      const response = await fetch('https://auction-platform-backend-uvjo.onrender.com/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, userType }),
