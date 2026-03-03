@@ -17,8 +17,8 @@ export function AutoBidFooter() {
               <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Customer support</h4>
               <div className="space-y-4">
                 <p className="text-sm font-bold text-gray-300 leading-relaxed">
-                0788420128<br/>
-                  0788420128<br/>
+                07884201287<br/>
+                  0788420127<br/>
                   bugingoeloi@gmail.com<br/>
                   <span className="text-gray-500 text-[10px] uppercase font-black tracking-widest mt-2 block">(Monday - Friday 08:00 - 18:00)</span>
                 </p>

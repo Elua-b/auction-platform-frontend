@@ -35,6 +35,12 @@ export default function SellerProductDetailPage() {
 
   // Auction State
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    startingPrice: ''
+  })
   const [auctionTimes, setAuctionTimes] = useState({
     startTime: '',
     endTime: ''
@@ -52,13 +58,18 @@ export default function SellerProductDetailPage() {
       const data = await productAPI.getById(productId)
       
       // Ownership check
-      if (user && data.sellerId !== user.id && user.role !== 'ADMIN') {
+      if (user && data.sellerId !== user.id && user.userType !== 'ADMIN') {
         setError('You do not have permission to manage this product')
         setTimeout(() => router.push('/seller/dashboard'), 3000)
         return
       }
 
       setProduct(data)
+      setEditFormData({
+        title: data.title,
+        description: data.description,
+        startingPrice: data.startingPrice.toString()
+      })
     } catch (err: any) {
       setError(err.message || 'Failed to load product')
     } finally {
@@ -76,6 +87,22 @@ export default function SellerProductDetailPage() {
     }
   }
 
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setActionLoading(true)
+      await productAPI.update(productId, {
+        ...editFormData,
+        startingPrice: parseInt(editFormData.startingPrice, 10)
+      })
+      setIsEditModalOpen(false)
+      loadProduct()
+    } catch (err: any) {
+      setError(err.message || 'Failed to update product')
+    } finally {
+      setActionLoading(false)
+    }
+  }
   const handleStartAuction = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -134,7 +161,11 @@ export default function SellerProductDetailPage() {
             </div>
           </div>
           <div className="flex gap-4">
-            <Button variant="outline" className="border-slate-200 text-slate-400 hover:bg-white hover:text-primary rounded-sm font-black uppercase tracking-widest text-[10px] h-12 px-8 bg-white shadow-sm transition-all">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEditModalOpen(true)}
+              className="border-slate-200 text-slate-400 hover:bg-white hover:text-primary rounded-sm font-black uppercase tracking-widest text-[10px] h-12 px-8 bg-white shadow-sm transition-all"
+            >
                <Edit className="w-4 h-4 mr-2" />
                Modify Records
             </Button>
@@ -272,6 +303,55 @@ export default function SellerProductDetailPage() {
                     )}
                   </div>
                </Card>
+
+               {/* Edit Product Modal */}
+               <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                  <DialogContent className="bg-white border-none rounded-sm shadow-2xl p-0 overflow-hidden max-w-lg">
+                    <div className="h-1.5 bg-primary w-full" />
+                    <DialogHeader className="p-10 border-b border-slate-50">
+                      <DialogTitle className="text-xl font-black text-slate-800 uppercase tracking-tight">Modify Asset Registry</DialogTitle>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">Update Secure Database Entry</p>
+                    </DialogHeader>
+                    <form onSubmit={handleUpdateProduct} className="p-10 space-y-8">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asset Identity</label>
+                        <Input 
+                          required
+                          value={editFormData.title}
+                          onChange={e => setEditFormData({...editFormData, title: e.target.value})}
+                          className="bg-slate-50 border-none rounded-sm h-12 text-slate-800 font-bold focus-visible:ring-1 focus-visible:ring-primary" 
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detailed Narrative</label>
+                        <textarea 
+                          required
+                          value={editFormData.description}
+                          onChange={e => setEditFormData({...editFormData, description: e.target.value})}
+                          className="w-full bg-slate-50 border-none rounded-sm p-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary min-h-[120px] transition-all resize-none" 
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Base Threshold (RWF)</label>
+                        <Input 
+                          required
+                          type="number"
+                          value={editFormData.startingPrice}
+                          onChange={e => setEditFormData({...editFormData, startingPrice: e.target.value})}
+                          className="bg-slate-50 border-none rounded-sm h-12 text-slate-800 font-bold focus-visible:ring-1 focus-visible:ring-primary" 
+                        />
+                      </div>
+                      <DialogFooter className="pt-8 flex flex-col md:flex-row gap-4 border-t border-slate-50">
+                        <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)} className="flex-1 rounded-sm font-black uppercase tracking-widest text-[10px] h-14 border-slate-200 text-slate-400">
+                          Abort
+                        </Button>
+                        <Button type="submit" disabled={actionLoading} className="flex-1 bg-primary text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-sm shadow-lg shadow-primary/20">
+                          {actionLoading ? 'UPDATING...' : 'COMMIT CHANGES'}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+               </Dialog>
            </div>
 
            {/* Right: Pricing & Meta */}

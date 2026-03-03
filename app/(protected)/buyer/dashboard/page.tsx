@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import { productAPI, categoryAPI, auctionAPI, eventAPI } from '@/lib/api'
+import { productAPI, categoryAPI, auctionAPI, eventAPI, bidAPI, orderAPI } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -13,8 +13,14 @@ import { Heart, Gavel, LogOut, Clock, TrendingUp, Search, Zap, User as UserIcon,
 import Header from '@/components/header'
 import ProductGrid from '@/components/products/product-grid'
 import { Badge } from '@/components/ui/badge'
-import { orderAPI } from '@/lib/api'
 import { formatCurrency } from '@/lib/utils'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 
 interface Product {
   id: string
@@ -39,6 +45,21 @@ interface Category {
   id: string
   name: string
   image?: string
+}
+
+interface Bid {
+  id: string
+  amount: number
+  userId: string
+  createdAt: string
+  auctionId?: string
+  eventProductId?: string
+  auction?: {
+    id: string
+    status: string
+    endTime: string
+    product: Product
+  }
 }
 
 interface Order {
@@ -77,10 +98,13 @@ function BuyerDashboardContent() {
   const [categories, setCategories] = useState<Category[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [events, setEvents] = useState<any[]>([])
+  const [userBids, setUserBids] = useState<Bid[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [watchlist, setWatchlist] = useState<string[]>([])
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
 
   const searchParams = useSearchParams()
   const defaultTab = searchParams.get('tab') || 'stats'
@@ -94,18 +118,20 @@ function BuyerDashboardContent() {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [productsData, categoriesData, auctionsData, ordersData, eventsData] = await Promise.all([
+      const [productsData, categoriesData, auctionsData, ordersData, eventsData, bidsData] = await Promise.all([
         productAPI.getAll({ standalone: true }),
         categoryAPI.getAll(),
         auctionAPI.getAll(),
         orderAPI.getMyOrders(),
         eventAPI.getAll(),
+        user?.id ? bidAPI.getByUser(user.id) : Promise.resolve([])
       ])
       setProducts(productsData)
       setCategories(categoriesData)
       setAuctions(auctionsData)
       setOrders(ordersData)
       setEvents(eventsData)
+      setUserBids(bidsData)
     } catch (error) {
       console.error('Failed to load data:', error)
     } finally {
@@ -396,7 +422,7 @@ function BuyerDashboardContent() {
  
           {/* Active Bids Tab */}
           <TabsContent value="bids">
-            {activeBidsCount === 0 ? (
+            {userBids.length === 0 ? (
               <Card className="bg-white border-none p-20 text-center rounded-sm shadow-sm border-dashed border-2 border-slate-100">
                 <Gavel className="w-12 h-12 text-slate-200 mx-auto mb-6" />
                 <p className="text-slate-800 font-bold uppercase tracking-widest text-sm mb-4">No active bid protocols</p>
@@ -411,34 +437,49 @@ function BuyerDashboardContent() {
                       <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
                         <tr>
                           <th className="px-8 py-5">Asset Identity</th>
-                          <th className="px-8 py-5">Current Valuation</th>
-                          <th className="px-8 py-5">End Protocol</th>
+                          <th className="px-8 py-5">Your Bid</th>
+                          <th className="px-8 py-5">Current Target</th>
+                          <th className="px-8 py-5">Status</th>
                           <th className="px-8 py-5 text-center">Operation</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
-                        {activeBids.map((auction) => {
-                          const product = products.find(p => p.id === auction.productId)
+                        {userBids.map((bid) => {
+                          const product = bid.auction?.product
                           return (
-                            <tr key={auction.id} className="hover:bg-slate-50/50 transition duration-200 group">
+                            <tr key={bid.id} className="hover:bg-slate-50/50 transition duration-200 group">
                               <td className="px-8 py-6">
                                 <div className="flex items-center gap-4">
                                   <div className="w-10 h-10 bg-black rounded-none overflow-hidden flex-shrink-0 border border-slate-100">
                                     {product?.image && <img src={product.image} className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all" alt={product.title} />}
                                   </div>
-                                  <p className="font-bold text-slate-800 uppercase tracking-tight text-[11px]">{product?.title}</p>
+                                  <div>
+                                    <p className="font-bold text-slate-800 uppercase tracking-tight text-[11px]">{product?.title || 'Unknown Asset'}</p>
+                                    <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest mt-1">Registry Ref: {bid.id.slice(0,8)}</p>
+                                  </div>
                                 </div>
                               </td>
                               <td className="px-8 py-6">
-                                <p className="text-lg font-black text-slate-800 tracking-tighter">{formatCurrency(product?.startingPrice || 0)}</p>
+                                <p className="text-lg font-black text-[#e35b5a] tracking-tighter">{formatCurrency(bid.amount)}</p>
                               </td>
                               <td className="px-8 py-6">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(auction.endTime).toLocaleString()}</p>
+                                <p className="text-sm font-bold text-slate-400 tracking-tight">{formatCurrency(product?.startingPrice || 0)}</p>
+                              </td>
+                              <td className="px-8 py-6">
+                                <Badge variant="outline" className={`rounded-none border-none text-[8px] font-black uppercase tracking-widest px-2 ${
+                                  bid.auction?.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+                                }`}>
+                                  {bid.auction?.status || 'UNKNOWN'}
+                                </Badge>
                               </td>
                               <td className="px-8 py-6 text-center">
-                                <Link href={`/auctions/${auction.id}`}>
-                                  <Button size="sm" className="bg-[#e35b5a] hover:bg-slate-800 text-white rounded-none text-[9px] font-black uppercase tracking-widest h-8 px-5">Continue Bidding</Button>
-                                </Link>
+                                {bid.auctionId ? (
+                                  <Link href={`/products/${product?.id}`}>
+                                    <Button size="sm" className="bg-slate-800 hover:bg-[#e35b5a] text-white rounded-none text-[9px] font-black uppercase tracking-widest h-8 px-5">View Protocol</Button>
+                                  </Link>
+                                ) : (
+                                  <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Event Asset</span>
+                                )}
                               </td>
                             </tr>
                           )
@@ -493,7 +534,17 @@ function BuyerDashboardContent() {
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(order.createdAt).toLocaleDateString()}</p>
                             </td>
                             <td className="px-8 py-6 text-center">
-                              <Button size="sm" variant="outline" className="border-slate-100 text-slate-400 hover:text-slate-800 hover:bg-slate-50 rounded-none text-[9px] font-black uppercase tracking-widest h-8 px-4">Registry Info</Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => {
+                                  setSelectedOrder(order)
+                                  setIsOrderModalOpen(true)
+                                }}
+                                className="border-slate-100 text-slate-400 hover:text-slate-800 hover:bg-slate-50 rounded-none text-[9px] font-black uppercase tracking-widest h-8 px-4"
+                              >
+                                Registry Info
+                              </Button>
                             </td>
                           </tr>
                         ))}
@@ -504,6 +555,65 @@ function BuyerDashboardContent() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Order Details Modal */}
+        <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
+          <DialogContent className="bg-white border-none rounded-sm shadow-2xl p-0 overflow-hidden max-w-lg">
+            <div className="h-1.5 bg-[#e35b5a] w-full" />
+            <DialogHeader className="p-8 border-b border-slate-50">
+              <DialogTitle className="text-xl font-black text-slate-800 uppercase tracking-tight">Acquisition Certificate</DialogTitle>
+              <DialogDescription className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Registry Record: {selectedOrder?.id}</DialogDescription>
+            </DialogHeader>
+            
+            {selectedOrder && (
+              <div className="p-8 space-y-8">
+                <div className="flex gap-6 items-start">
+                  <div className="w-24 h-24 bg-slate-50 border border-slate-100 rounded-sm overflow-hidden flex-shrink-0">
+                    {selectedOrder.product.image ? (
+                      <img src={selectedOrder.product.image} className="w-full h-full object-cover" alt={selectedOrder.product.title} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-8 h-8 text-slate-200" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight leading-tight mb-2">{selectedOrder.product.title}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="rounded-none border-slate-200 text-slate-400 text-[8px] font-black uppercase tracking-widest px-2">{selectedOrder.product.status}</Badge>
+                      <Badge className="rounded-none bg-emerald-50 text-emerald-600 border border-emerald-100 text-[8px] font-black uppercase tracking-widest px-2">{selectedOrder.paymentStatus}</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8 py-6 border-y border-slate-50">
+                  <div className="space-y-1">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Clearing Valuation</p>
+                    <p className="text-2xl font-black text-slate-800 tracking-tighter leading-none">{formatCurrency(selectedOrder.amount)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Registry Date</p>
+                    <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Technical Specifications</p>
+                  <p className="text-xs font-medium text-slate-600 leading-relaxed line-clamp-3">{selectedOrder.product.description}</p>
+                </div>
+
+                <div className="pt-4">
+                  <Button 
+                    onClick={() => setIsOrderModalOpen(false)}
+                    className="w-full bg-slate-800 hover:bg-[#e35b5a] text-white font-black uppercase tracking-widest text-[10px] rounded-none h-14 transition-all"
+                  >
+                    Close Protocol
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
   </div>
 )
 }

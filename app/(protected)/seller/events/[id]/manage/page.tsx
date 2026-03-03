@@ -62,8 +62,13 @@ export default function ManageEventPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [categories, setCategories] = useState<any[]>([])
   
-  // New Product Modal State
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditEventModalOpen, setIsEditEventModalOpen] = useState(false)
+  const [editEventFormData, setEditEventFormData] = useState({
+    title: '',
+    date: '',
+    startTime: ''
+  })
   const [newProduct, setNewProduct] = useState({
     title: '',
     description: '',
@@ -84,13 +89,18 @@ export default function ManageEventPage() {
       const eventData = await eventAPI.getById(eventId)
       
       // Ownership check
-      if (user && eventData.sellerId !== user.id && user.role !== 'ADMIN') {
+      if (user && eventData.sellerId !== user.id && user.userType !== 'ADMIN') {
         setError('You do not have permission to manage this event')
         setTimeout(() => router.push('/seller/dashboard'), 3000)
         return
       }
       
       setEvent(eventData)
+      setEditEventFormData({
+        title: eventData.title,
+        date: new Date(eventData.date).toISOString().split('T')[0],
+        startTime: eventData.startTime
+      })
 
       if (user) {
         const [productsData, categoriesData] = await Promise.all([
@@ -166,6 +176,23 @@ export default function ManageEventPage() {
     }
   }
 
+  const handleUpdateEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      setActionLoading(true)
+      await eventAPI.update(eventId, {
+        ...editEventFormData,
+        date: new Date(editEventFormData.date).toISOString()
+      })
+      setIsEditEventModalOpen(false)
+      loadData()
+    } catch (err: any) {
+      setError(err.message || 'Failed to update event')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   const handleEndEvent = async () => {
     if (!confirm('Are you sure you want to terminate this live session? All active bidding will be closed.')) return
     try {
@@ -235,6 +262,13 @@ export default function ManageEventPage() {
           </div>
 
           <div className="flex gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEditEventModalOpen(true)}
+              className="border-slate-200 text-slate-400 hover:bg-white hover:text-primary transition-all rounded-sm font-black uppercase tracking-widest text-[10px] h-14 px-8 bg-white shadow-sm"
+            >
+              Modify Event
+            </Button>
             {event.status === 'LIVE' && (
               <Button 
                 onClick={handleEndEvent}
@@ -464,6 +498,58 @@ export default function ManageEventPage() {
             </Card>
           </div>
         </div>
+
+        {/* Edit Event Modal */}
+        <Dialog open={isEditEventModalOpen} onOpenChange={setIsEditEventModalOpen}>
+          <DialogContent className="bg-white border-none rounded-sm shadow-2xl p-0 overflow-hidden max-w-lg">
+            <div className="h-1.5 bg-primary w-full" />
+            <DialogHeader className="p-8 border-b border-slate-50">
+              <DialogTitle className="text-xl font-black text-slate-800 uppercase tracking-tight">Modify Event Registry</DialogTitle>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">Update Secure Database Entry</p>
+            </DialogHeader>
+            <form onSubmit={handleUpdateEvent} className="p-8 space-y-8">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Event Identity</label>
+                <Input 
+                  required
+                  value={editEventFormData.title}
+                  onChange={e => setEditEventFormData({...editEventFormData, title: e.target.value})}
+                  className="bg-slate-50 border-none rounded-sm h-12 text-slate-800 font-bold focus-visible:ring-1 focus-visible:ring-primary" 
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Temporal date</label>
+                  <Input 
+                    required
+                    type="date"
+                    value={editEventFormData.date}
+                    onChange={e => setEditEventFormData({...editEventFormData, date: e.target.value})}
+                    className="bg-slate-50 border-none rounded-sm h-12 text-slate-800 font-bold focus-visible:ring-1 focus-visible:ring-primary" 
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Commencement</label>
+                  <Input 
+                    required
+                    type="time"
+                    value={editEventFormData.startTime}
+                    onChange={e => setEditEventFormData({...editEventFormData, startTime: e.target.value})}
+                    className="bg-slate-50 border-none rounded-sm h-12 text-slate-800 font-bold focus-visible:ring-1 focus-visible:ring-primary" 
+                  />
+                </div>
+              </div>
+              <DialogFooter className="pt-8 flex flex-col md:flex-row gap-4 border-t border-slate-50">
+                <Button type="button" variant="outline" onClick={() => setIsEditEventModalOpen(false)} className="flex-1 rounded-sm font-black uppercase tracking-widest text-[10px] h-14 border-slate-200 text-slate-400">
+                  Abort
+                </Button>
+                <Button type="submit" disabled={actionLoading} className="flex-1 bg-primary text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-sm shadow-lg shadow-primary/20">
+                  {actionLoading ? 'SYNCHRONIZING...' : 'COMMIT CHANGES'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   )
