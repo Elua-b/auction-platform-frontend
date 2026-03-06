@@ -111,10 +111,10 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</label>
                     <Input
                       type="email"
-                      placeholder="EMAIL@PROTOCOL.COM"
+                      placeholder="email@protocol.com"
                       value={loginForm.email}
                       onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                      className="bg-slate-50 border-none rounded-none py-6 uppercase font-black text-[11px] tracking-widest placeholder:text-slate-200"
+                      className="bg-slate-50 border-none rounded-none py-6 font-black text-[11px] tracking-widest placeholder:text-slate-200"
                       required
                     />
                   </div>
@@ -177,10 +177,10 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Agent Name</label>
                     <Input
                       type="text"
-                      placeholder="FULL NAME"
+                      placeholder="Full Name"
                       value={registerForm.name}
                       onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                      className="bg-slate-50 border-none rounded-none py-6 uppercase font-black text-[11px] tracking-widest placeholder:text-slate-200"
+                      className="bg-slate-50 border-none rounded-none py-6 font-black text-[11px] tracking-widest placeholder:text-slate-200"
                       required
                     />
                   </div>
@@ -189,10 +189,10 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</label>
                     <Input
                       type="email"
-                      placeholder="EMAIL@PROTOCOL.COM"
+                      placeholder="email@protocol.com"
                       value={registerForm.email}
                       onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                      className="bg-slate-50 border-none rounded-none py-6 uppercase font-black text-[11px] tracking-widest placeholder:text-slate-200"
+                      className="bg-slate-50 border-none rounded-none py-6 font-black text-[11px] tracking-widest placeholder:text-slate-200"
                       required
                     />
                   </div>
