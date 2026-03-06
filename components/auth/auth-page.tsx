@@ -1,6 +1,7 @@
 'use client'
 
 import React from "react"
+import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
@@ -71,6 +72,18 @@ export default function AuthPage({ initialTab = 'login' }: AuthPageProps) {
       
       <main className="flex-1 flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-[480px]">
+
+          {/* Logo Brand */}
+          <div className="flex justify-center mb-10">
+            <div className="relative h-20 w-64">
+              <Image 
+                src="/assets/images/image.png" 
+                alt="CUNGURA Logo" 
+                fill
+                className="object-contain"
+              />
+            </div>
+          </div>
 
           {/* Auth Card */}
           <Card className="bg-white border-none shadow-2xl rounded-sm overflow-hidden p-0">

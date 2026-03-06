@@ -1,5 +1,4 @@
-'use client'
-
+import Image from 'next/image'
 import React from 'react'
 import { Facebook, Twitter, Instagram, Youtube, Linkedin, Mail, Phone, Clock } from 'lucide-react'
 
@@ -10,8 +9,13 @@ export function AutoBidFooter() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 mb-20">
           {/* Logo & Support */}
           <div>
-            <div className="flex flex-col mb-10 group cursor-pointer">
-              <span className="text-4xl font-black text-white leading-tight uppercase tracking-tighter">CUNGURA</span>
+            <div className="flex flex-col mb-10 group cursor-pointer relative h-20 w-64">
+              <Image 
+                src="/assets/images/image.png" 
+                alt="CUNGURA Logo" 
+                fill
+                className="object-contain"
+              />
             </div>
             <div className="space-y-6">
               <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">Customer support</h4>

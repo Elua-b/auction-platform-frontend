@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { Search, Menu, User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -22,9 +23,14 @@ export default function Header() {
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-slate-800 leading-none uppercase tracking-tighter group-hover:text-primary transition-colors italic">CUNGURA</span>
-              <div className="h-0.5 w-8 bg-primary mt-1 opacity-50 group-hover:w-full transition-all" />
+            <div className="relative h-14 w-56">
+              <Image 
+                src="/assets/images/image.png" 
+                alt="CUNGURA Logo" 
+                fill
+                className="object-contain transition-transform group-hover:scale-105 duration-300"
+                priority
+              />
             </div>
           </Link>
 

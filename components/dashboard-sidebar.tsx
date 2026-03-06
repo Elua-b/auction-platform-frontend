@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard, 
@@ -54,9 +55,13 @@ export default function DashboardSidebar({ user, onLogout }: SidebarProps) {
     <aside className="w-64 h-screen sticky top-0 bg-white border-r border-slate-100 flex flex-col z-40 hidden lg:flex shadow-sm">
       {/* Brand Header */}
       <div className="p-8 pb-10 flex justify-center">
-        <Link href="/" className="flex flex-col items-center group">
-          <span className="text-3xl font-black text-slate-800 leading-tight uppercase tracking-tighter transition-colors italic">CUNGURA</span>
-          <div className="h-1 w-8 bg-slate-100 mt-1 group-hover:bg-[#e35b5a] transition-all" />
+        <Link href="/" className="flex flex-col items-center group relative h-16 w-48">
+          <Image 
+            src="/assets/images/image.png" 
+            alt="CUNGURA Logo" 
+            fill
+            className="object-contain transition-transform group-hover:scale-105 duration-300"
+          />
         </Link>
       </div>
 
